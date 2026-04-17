@@ -1,0 +1,103 @@
+.toolbar {
+  height: 80px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  z-index: 995;
+  border-bottom: 0.5px solid gray; }
+  .toolbar .text {
+    padding-left: 22.5px;
+    padding-right: 22.5px; }
+  .toolbar .circle {
+    background: url("../../img/circle.png") no-repeat center center; }
+  .toolbar .line {
+    background: url("../../img/line.png") no-repeat center center; }
+  .toolbar .gradient {
+    background: url("../../img/image 1.png") no-repeat center center;
+    margin-top: 10px;
+    width: 50px !important;
+    height: 50px !important; }
+  .toolbar .undo {
+    margin-left: auto;
+    background: url("../../img/undo.png") no-repeat center center; }
+  .toolbar .redo {
+    background: url("../../img/redo.png") no-repeat center center; }
+  .toolbar .save {
+    margin-right: 2%;
+    background: url("../../img/save.png") no-repeat center center; }
+
+.setting-toolbar {
+  height: 40px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-shadow: 0 4px 5px gray;
+  top: 40px; }
+
+.moreInstruments {
+  position: relative;
+  margin-right: 4%;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  box-shadow: 2px 2px 10px #a69fa6;
+  background-color: white;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  gap: 10px; }
+  .moreInstruments .rect {
+    background: url("../../img/rect.png") no-repeat center center; }
+  .moreInstruments .line {
+    background: url("../../img/line.png") no-repeat center center; }
+  .moreInstruments .text {
+    background: url("../../img/text.png") no-repeat center center; }
+  .moreInstruments.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto; }
+  .moreInstruments.hide {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+    pointer-events: none; }
+
+button:hover {
+  background-color: lightblue;
+  border-radius: 10px;
+  transition: background-color 0.5s ease-in-out; }
+
+.toolbar__btn {
+  height: 70px;
+  width: 70px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  background-size: cover; }
+
+.brush {
+  background: url("../../img/brush.png") no-repeat center center; }
+
+.eraser {
+  background: url("../../img/eraser.png") no-repeat center center; }
+
+.rect {
+  background: url("../../img/rect.png") no-repeat center center; }
+
+.circle {
+  background: url("../../img/circle.png") no-repeat center center; }
+
+@media only screen and (max-width: 800) {
+  .toolbar__btn {
+    margin: 0px 0px 0px 0px !important; }
+
+  .toolbar .undo {
+    margin: 0px 0px 0px 0px !important; } }
+else .redo {
+  margin-left: 10px; }
+else .undo {
+  margin-right: 10px; }
+
+/*# sourceMappingURL=toolbar.css.map */

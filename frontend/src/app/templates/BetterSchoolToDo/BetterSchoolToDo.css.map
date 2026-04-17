@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,WAAY;EACR,gBAAgB,EAAE,OAAgB",
+"sources": ["BetterSchoolToDo.scss"],
+"names": [],
+"file": "BetterSchoolToDo.css"
+}

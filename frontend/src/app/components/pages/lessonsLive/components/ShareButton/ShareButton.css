@@ -1,0 +1,14 @@
+@charset "UTF-8";
+.demonstration path {
+  transform: scale(1.2);
+  /* Масштабирует path */
+  transform-origin: center;
+  /* Центрирует трансформацию */
+  width: 70px;
+  height: 70px; }
+
+.demonstration:hover {
+  cursor: pointer;
+  box-shadow: 1px 1px 41px -10px rgba(0, 0, 0, 0.75); }
+
+/*# sourceMappingURL=ShareButton.css.map */

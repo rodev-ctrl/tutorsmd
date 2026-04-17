@@ -1,0 +1,93 @@
+/*!******************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[3]!./app/components/Header/Header.css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************/
+.Home .Header div .menu div.item:hover {
+  font-size: 150%; }
+.Home .Header div .menu input.item:hover {
+  font-size: 150%; }
+
+@media only screen and (max-width: 600px) {
+  .Home .Header .flex .menu div .shortMenu div p:hover {
+    font-size: 120%; } }
+
+/*# sourceMappingURL=Header.css.map */
+
+/*!***************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[3]!./app/templates/Modal/Modal.css ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************/
+.pointer-events-none {
+  margin-right: 10%; }
+
+input.text-small {
+  padding: 30px; }
+input.text-small:focus {
+  animation-name: borderExist;
+  animation-duration: 1s;
+}
+
+  @keyframes borderExist {
+    0% { border: 0 }
+    100% { border-bottom: 1px solid white; }
+    }
+
+  .fieldModal div {
+    min-width: 360px
+}
+/*# sourceMappingURL=Modal.css.map */
+
+/*!*********************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[3]!./app/templates/LoginedCabinet/LoginedCabinet.css ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************************/
+@charset "UTF-8";
+/* Добавляем анимацию нижней границы */
+.borderAnimated {
+  position: relative;
+  padding-bottom: 5px;
+  /* Отступ для нижней границы */ }
+  .borderAnimated::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #3498db;
+    transition: width 0.5s ease-in-out; }
+
+.item:hover .borderAnimated::after {
+  width: 100%; }
+
+/*# sourceMappingURL=LoginedCabinet.css.map */
+
+/*!***********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[3]!./app/components/Body/Tutors/Tutors.css ***!
+  \***********************************************************************************************************************************************************************************************************************************************************************************/
+.tutorDeleted {
+  animation: fade-in 0.5s forwards; }
+
+@keyframes fade-in {
+  0% {
+    opacity: 1; }
+  100% {
+    opacity: 0;
+    display: none; } }
+.tutorExisted {
+  animation: fade-out 0.5s forwards; }
+
+@keyframes fade-out {
+  0% {
+    opacity: 0;
+    display: none; }
+  100% {
+    opacity: 1; } }
+
+/*# sourceMappingURL=Tutors.css.map */
+
+/*!****************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[3]!./app/components/Body/Prices/Price/Price.css ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************************/
+.active {
+  border: 3px solid yellow; }
+
+/*# sourceMappingURL=Price.css.map */
+

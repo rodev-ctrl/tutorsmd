@@ -1,0 +1,41 @@
+.pointer-events-none {
+    margin-right: 10%;
+}
+
+input.text-small {
+    padding: 30px;
+}
+
+.fieldModal {
+    div {
+    min-width: 360px
+}
+}
+
+button {
+    height: 36px;
+}
+
+/* градиент шапки под твои акценты (оранжевый + бирюзовый) */
+.modal-header-gradient {
+    background: linear-gradient(135deg, #06b6d4 0%, #f59e0b 100%);
+  }
+  
+  /* основная кнопка в стиле страницы (оранжевый) */
+  .btn-primary {
+    background-color: #f59e0b !important;
+    color: #fff !important;
+  }
+  .btn-primary:hover {
+    background-color: #f1a92a !important;
+  }
+  
+  /* мелкие правки формы */
+  .MuiTextField-root {
+    background: #fff;
+    border-radius: 10px;
+  }
+  
+  
+
+

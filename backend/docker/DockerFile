@@ -1,0 +1,22 @@
+FROM node:18
+
+WORKDIR /app
+
+# копируем package.json и package-lock.json из локального хранилища
+COPY package*.json ./
+
+# устанавливаем зависимости
+RUN npm install
+
+# копируем весь проект
+COPY . .
+
+# Запуск через RUN
+RUN npm install -g ts-node typescript
+RUN tsc
+
+ENV PORT=7898
+EXPOSE 7898
+
+# стартуем продакшн-режим (nodemon не нужен)
+CMD ["node", "dist/index.js"]

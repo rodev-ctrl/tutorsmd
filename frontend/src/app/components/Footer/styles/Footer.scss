@@ -1,0 +1,77 @@
+
+.footer {
+    background: linear-gradient(160deg, #F3F4F6 50%, #F97316 50%);
+      
+    &::before {
+        background: linear-gradient(to right, rgba(255,122,0,.08), rgba(255,122,0,.02));
+        pointer-events: none;
+      }
+    }
+
+
+    /* БАЗА: не ограничиваем высоту, даём дышать контенту */
+footer, .footer-bg {
+  width: 100%;
+}
+
+/* ФОН: косая плашка на десктопе/планшете, поверх — контент */
+.footer-bg {
+  position: relative;
+  overflow: hidden; /* чтобы фон не вылезал */
+  background: transparent; /* сам фон рисуем через ::before */
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    /* Оранжевая косая с лёгким серым слоем под ней */
+    background:
+      linear-gradient(165deg, #f97316 0 58%, transparent 58% 100%),
+      linear-gradient(0deg, #f3f4f6 0 100%); /* светло-серый бэкграунд */
+  }
+}
+
+
+
+/* Контент всегда выше фона */
+.footer-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Заголовки секций */
+.footer-title {
+  font-weight: 700;
+}
+
+/* Ссылки и кнопки: не ломаем слова по буквам, приятные ховеры */
+.footer-link {
+  display: inline-block;
+  text-decoration: none;
+  color: #111827;              /* gray-900 */
+  word-break: keep-all;        /* не рвём слово по буквам */
+  white-space: normal;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.footer-link:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+/* Мобилки: плоская оранжевая полоса сверху, без диагонали,
+   больше вертикальных отступов, чтобы ничего не заезжало */
+@media (max-width: 640px) {
+  .footer-bg::before {
+    background: linear-gradient(160deg, #f3f4f6 0% 50%, #f97316 50% 100%,);
+  }
+}
+
+/* Планшет: чутка ниже косую — так чище смотрится */
+@media (min-width: 640px) and (max-width: 1023.98px) {
+  .footer-bg::before {
+    background:
+      linear-gradient(165deg, #f97316 0 52%, transparent 52% 100%),
+      linear-gradient(0deg, #f3f4f6 0 100%);
+  }
+}

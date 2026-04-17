@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": false,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "moduleResolution": "bundler",  // Использование механизма разрешения, ориентированного на бандлеры
+    "module": "esnext",              // Модули ES
+    "target": "es6",                 // Целевая версия JavaScript
+    "baseUrl": "./src",              // Базовый путь для разрешения модулей
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [],
+    "paths": {
+      "@/*": ["./*"]  
+    },
+    "allowSyntheticDefaultImports": true,
+    "resolvePackageJsonExports": true,
+    "resolvePackageJsonImports": true,
+    "preserveConstEnums": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true
+  },
+
+  "include": [
+  "src/**/*"
+],
+  
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,KAAM;EACF,KAAK,EAAE,KAAK;EACZ,UAAU,EAAE,sEAAsE;EAClF,MAAM,EAAE,IAAI",
+"sources": ["BodyMessagesFromGasts.scss"],
+"names": [],
+"file": "BodyMessagesFromGasts.css"
+}

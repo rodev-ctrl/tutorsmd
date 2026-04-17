@@ -1,0 +1,46 @@
+
+  .menu {
+    position: sticky; 
+    top: 0; 
+    z-index: 1000;
+    height: 92px;
+    max-height: 92px;
+    backdrop-filter: blur(6px);
+    background: linear-gradient(160deg, #F97316 50%, #F3F4F6 50%);
+      
+    &::before {
+        content: "";
+        position: absolute; inset: 0;
+        background: linear-gradient(to right, rgba(255,122,0,.08), rgba(255,122,0,.02));
+        pointer-events: none;
+      }
+
+      .menuItem {
+        border-radius: 9999px;
+        padding: 6px 10px;
+        transition: background-color .2s ease, color .2s ease;
+      }
+      .menuItem:hover { background: #FFE6CC; }
+      .menuItem.activeLink { background: #FF7A00; color: #fff; }
+      .menuItem.activeLink .borderAnimated::after { background: #fff; }
+      .menuItem:focus-visible {
+        outline: 2px solid #FF7A00;
+        outline-offset: 2px;
+        border-radius: 10px;
+      }
+      
+        /* Стандартная анимация */
+      .menuItem:hover .borderAnimated::after {
+        width: 100%;
+      }
+      
+      /* И сразу делаем фиксированную оранжевую полоску */
+      .menuItem.activeLink .borderAnimated::after {
+        width: 100%;
+        background-color: orange;
+      }
+  }
+
+  
+  
+  

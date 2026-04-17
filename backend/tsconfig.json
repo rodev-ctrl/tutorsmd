@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",                      // Версия ECMAScript для выхода (последняя версия)
+    "module": "commonjs",                      // Использование модулей ECMAScript
+    "jsx": "react-jsx",                      // Поддержка JSX для React (если используется)
+    "moduleResolution": "node",              // Разрешение модулей в стиле Node.js
+    "esModuleInterop": true,                 // Совместимость с CommonJS модулями
+    "skipLibCheck": true,                    // Пропуск проверки типов библиотек для ускорения компиляции
+    "forceConsistentCasingInFileNames": true, // Обязательная согласованность регистров в именах файлов
+    "strict": true,                          // Включение строгого режима для более безопасного TypeScript
+    "allowJs": true,                         // Разрешение использования JavaScript файлов
+    "noEmit": true,                          // Отключение вывода файлов компилятором
+    "resolveJsonModule": true,               // Разрешение импорта JSON файлов
+
+    "types": ["node", "express"],
+    "lib": ["ESNext"],
+
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "./**/*.d.ts", "usersInChat.js", "infrastructure/database/db.ts", "middlewares/requireAuth.ts", "models/desk.js"],     // Включение всех файлов .ts и .tsx в проекте
+  "exclude": ["node_modules", "dist"]         // Исключение папок node_modules и dist
+}
