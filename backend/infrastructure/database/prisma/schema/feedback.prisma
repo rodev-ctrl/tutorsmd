@@ -1,0 +1,10 @@
+model Feedback {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  text      String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("feedbacks")
+}

@@ -1,0 +1,115 @@
+enum LessonStatus {
+  confirmed
+  in_progress
+  completed
+  cancelled_by_client
+  cancelled_by_tutor
+  rescheduled
+  no_show_client
+  no_show_tutor
+}
+
+enum LessonType {
+  trial
+  regular
+}
+
+enum MaterialType {
+  homework
+  homework_done
+  lesson_file
+  other
+}
+
+enum CancelledByRole {
+  client
+  tutor
+}
+
+model Lesson {
+  id                  String       @id @default(uuid()) @db.Uuid
+  clientId            String       @db.Uuid
+  tutorId             String       @db.Uuid
+  subjectId           String       @db.Uuid
+  quizId              String?      @db.Uuid
+  type                LessonType
+  roomId              String       @db.VarChar(255)
+  status              LessonStatus @default(confirmed)
+  cancellationReason  String?      @db.Text
+  rescheduledFromId   String?      @db.Uuid
+  recurringScheduleId String?      @db.Uuid
+  scheduledAt         DateTime     @db.Timestamptz()
+  durationMinutes     Int          @default(60)
+  startedAt           DateTime?    @db.Timestamptz()
+  completedAt         DateTime?    @db.Timestamptz()
+  createdAt           DateTime     @default(now()) @db.Timestamptz()
+  updatedAt           DateTime     @updatedAt @db.Timestamptz()
+
+  client            Client             @relation(fields: [clientId], references: [id])
+  tutor             Tutor              @relation(fields: [tutorId], references: [id])
+  subject           Subject            @relation(fields: [subjectId], references: [id])
+  rescheduledFrom   Lesson?            @relation("LessonReschedule", fields: [rescheduledFromId], references: [id])
+  rescheduledTo     Lesson[]           @relation("LessonReschedule")
+  recurringSchedule RegularSchedule?   @relation(fields: [recurringScheduleId], references: [id])
+  materials         LessonMaterial[]
+  tutorReport       LessonTutorReport?
+  clientNotes       LessonClientNote?
+  reviews           Review[]
+  appeals           Appeal[]
+  quiz              Quiz?              @relation(fields: [quizId], references: [id])
+  quizAnswers       QuizAnswer[]
+
+  @@map("lessons")
+}
+
+model LessonMaterial {
+  id               String       @id @default(uuid()) @db.Uuid
+  lessonId         String       @db.Uuid
+  uploadedByTutor  String?      @db.Uuid
+  uploadedByClient String?      @db.Uuid
+  materialType     MaterialType
+  fileUrl          String       @db.Text
+  fileName         String       @db.Text
+  fileSize         Int?
+  mimeType         String?      @db.VarChar(100)
+  createdAt        DateTime     @default(now()) @db.Timestamptz()
+  updatedAt        DateTime     @updatedAt @db.Timestamptz()
+
+  lesson Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  tutor  Tutor?  @relation("TutorMaterial", fields: [uploadedByTutor], references: [id])
+  client Client? @relation("ClientMaterial", fields: [uploadedByClient], references: [id])
+
+  @@map("lesson_materials")
+}
+
+model LessonTutorReport {
+  id                 String   @id @default(uuid()) @db.Uuid
+  lessonId           String   @unique @db.Uuid
+  tutorId            String   @db.Uuid
+  progressOfClass    String?  @db.Text
+  recommendedToLearn String?  @db.Text
+  createdAt          DateTime @default(now()) @db.Timestamptz()
+  updatedAt          DateTime @updatedAt @db.Timestamptz()
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  tutor  Tutor  @relation(fields: [tutorId], references: [id])
+
+  @@map("lesson_tutor_reports")
+}
+
+model LessonClientNote {
+  id          String   @id @default(uuid()) @db.Uuid
+  lessonId    String   @unique @db.Uuid
+  clientId    String   @db.Uuid
+  understand  String?  @db.Text
+  difficult   String?  @db.Text
+  question    String?  @db.Text
+  selfRating  Int?     // SMALLINT 1-5
+  createdAt   DateTime @default(now()) @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @db.Timestamptz()
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@map("lesson_client_notes")
+}

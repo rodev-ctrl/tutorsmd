@@ -1,0 +1,21 @@
+enum AppealStatus {
+  open
+  resolved
+  rejected
+}
+
+model Appeal {
+  id        String       @id @default(uuid()) @db.Uuid
+  lessonId  String       @db.Uuid
+  clientId  String?      @db.Uuid  // NULL если от тьютора
+  tutorId   String?      @db.Uuid  // NULL если от клиента
+  status    AppealStatus @default(open)
+  expiresAt DateTime?    @db.Timestamptz()
+  createdAt DateTime     @default(now()) @db.Timestamptz()
+
+  lesson Lesson  @relation(fields: [lessonId], references: [id])
+  client Client? @relation(fields: [clientId], references: [id])
+  tutor  Tutor?  @relation(fields: [tutorId], references: [id])
+
+  @@map("appeals")
+}

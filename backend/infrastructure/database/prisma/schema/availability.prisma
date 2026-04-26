@@ -1,0 +1,37 @@
+model AvailableSlot {
+  id        String   @id @default(uuid()) @db.Uuid
+  tutorId   String   @db.Uuid
+  dayOfWeek Int
+  startTime String   @db.VarChar(5)
+  endTime   String   @db.VarChar(5)
+  timezone  String   @db.VarChar(64)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz()
+
+  tutor Tutor @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@unique([tutorId, dayOfWeek, startTime])
+  @@map("available_slots")
+}
+
+model RegularSchedule {
+  id              String          @id @default(uuid()) @db.Uuid
+  tutorId         String          @db.Uuid
+  clientId        String          @db.Uuid
+  subjectId       String          @db.Uuid
+  dayOfWeek       Int
+  timeOfDay       DateTime        @db.Timetz()  // время с timezone
+  durationMinutes Int             @default(60)
+  isActive        Boolean         @default(true)
+  cancelledAt     DateTime?       @db.Timestamptz()
+  cancelledBy     CancelledByRole?
+  createdAt       DateTime        @default(now()) @db.Timestamptz()
+  updatedAt       DateTime        @updatedAt @db.Timestamptz()
+
+  tutor   Tutor   @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  client  Client  @relation(fields: [clientId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+  lessons Lesson
+
+  @@map("regular_schedules")
+}
