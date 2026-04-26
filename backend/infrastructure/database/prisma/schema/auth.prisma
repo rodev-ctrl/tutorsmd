@@ -13,7 +13,7 @@ model User {
   userRoles           UserRole[]
   refreshToken       RefreshToken[]
   oauthProvider      OAuthProvider[]
-  emailVerifications EmailVerification[]
+  emailVerifications EmailVerification?
   feedbacks          Feedback[]
   emailChange        EmailChange?
   client             Client?
@@ -74,7 +74,7 @@ model OAuthProvider {
 
 model EmailVerification {
   id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @db.Uuid
+  userId    String   @unique @db.Uuid
   link     String   @unique @db.Text  // хэш ссылки
   expiresAt DateTime @db.Timestamptz()
   createdAt DateTime @default(now()) @db.Timestamptz()
