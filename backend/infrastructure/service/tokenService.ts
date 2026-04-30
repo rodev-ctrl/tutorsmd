@@ -8,7 +8,7 @@ import { ModelStatic } from "sequelize";
 import TokenSchema from "../database/models/tokenModel";
 import TokenTutorSchema from "../database/models/tokenTutorModel";
 
-import { ITokenService } from "../../application/ports/ITokenService";
+import { ITokenService } from "../../application/ports/IAccessTokenService";
 import ApiError from "../../domain/errors/apiError";
 
 type Role = "client" | "tutor";

@@ -1,3 +1,4 @@
+// domain/value-objects/Password.ts
 import { DomainError } from '../errors/DomainError';
 
 export class Password {
@@ -11,25 +12,25 @@ export class Password {
   }
 
   static validate(plain: string): Password {
-
+    // Только проверка на полностью пустую строку — пробелы внутри разрешены по OWASP
     if (!plain || plain.trim().length === 0) {
       throw new DomainError('Password cannot be empty');
     }
-
-    // Длина считается по оригиналу — пробелы внутри разрешены по OWASP
+    // Длина считается по оригиналу без trim
     if (plain.length < Password.MIN_LENGTH) {
       throw new DomainError(
         `Password must be at least ${Password.MIN_LENGTH} characters`
       );
     }
-
+    // Защита от DoS на Argon2 — максимум 64 символа
     if (plain.length > Password.MAX_LENGTH) {
       throw new DomainError(
         `Password must be at most ${Password.MAX_LENGTH} characters`
       );
     }
+    // OWASP: не требуем состав символов (заглавные, цифры, спецсимволы)
+    // Длина важнее состава
 
-    // 4. Новый стандарт — Argon2id принимает любые символы, ограничений нет
     return new Password(plain);
   }
 

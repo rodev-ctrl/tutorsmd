@@ -1,50 +1,39 @@
-// application/usecases/auth/ChangePasswordUseCase.ts
-
 import { IUserRepository } from '../../../domain/repositories/IUserRepository';
-import { ITokenService } from '../../ports/ITokenService';
+import { IRefreshTokenRepository } from '../../../domain/repositories/IRefreshTokenRepository';
 import { IPasswordHasher } from '../../ports/IPasswordHasher';
-import ApiError from '../../../domain/errors/apiError';
+import { Password } from '../../../domain/value-objects/Password';
+import { DomainError } from '../../../domain/errors/DomainError';
 
 export class ChangePasswordUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
-    private readonly tokenService: ITokenService,
-    private readonly passwordHasher: IPasswordHasher
+    private readonly refreshTokenRepo: IRefreshTokenRepository,
+    private readonly passwordHasher: IPasswordHasher,
   ) {}
 
-  async execute(
-    refreshToken: string,
-    oldPassword: string,
-    newPassword: string
-  ): Promise<boolean> {
-    // 1. Валидация токена
-    const payload = this.tokenService.validateRefreshToken(refreshToken);
-    if (!payload) throw ApiError.Unauthorized('Invalid token');
+  async execute(userId: string, oldPassword: string, newPassword: string): Promise<void> {
+    // 1. Найти юзера
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new DomainError('User not found');
 
-    // 2. Проверка сессии
-    const role = payload.role as 'client' | 'tutor';
-    const tokenDoc = await this.tokenService.findToken(refreshToken, role);
-    if (!tokenDoc) throw ApiError.Forbidden('Session not found or expired');
+    // 2. OAuth юзер не может менять пароль
+    if (user.isOAuthUser()) {
+      throw new DomainError('OAuth users cannot change password');
+    }
 
-    // 3. Найти пользователя
-    const user = await this.userRepo.findById(payload.userId, role);
-    if (!user) throw ApiError.NotFound('User not found');
+    // 3. Проверить старый пароль
+    const isValid = await this.passwordHasher.compare(oldPassword, user.hashedPassword!);
+    if (!isValid) throw new DomainError('Incorrect old password');
 
-    // 4. Проверить старый пароль (через port, не в domain entity)
-    const isValid = await this.passwordHasher.compare(oldPassword, user.hashedPassword);
-    if (!isValid) throw ApiError.Unauthorized('Incorrect old password');
+    // 4. Валидация нового пароля
+    Password.validate(newPassword);
 
-    // 5. Хешировать новый пароль и обновить
+    // 5. Хэшировать и сохранить
     const newHash = await this.passwordHasher.hash(newPassword);
-    user.setHashedPassword(newHash);
+    const updatedUser = user.setHashedPassword(newHash);
+    await this.userRepo.save(updatedUser);
 
-    // 6. Сохранить
-    await this.userRepo.save(user);
-
-    // 7. Разлогинить на всех устройствах
-    const id: number = user.id as number; 
-    await this.tokenService.logoutAllDevices(id, role);
-
-    return true;
+    // 6. Разлогинить со всех устройств — безопасность
+    await this.refreshTokenRepo.revokeAllByUserId(userId);
   }
 }

@@ -1,64 +1,88 @@
-// application/usecases/auth/LoginUseCase.ts
-
 import { IUserRepository } from '../../../domain/repositories/IUserRepository';
-import { ITokenService } from '../../ports/ITokenService';
-import { ITokenRepository } from '../../../domain/repositories/ITokenRepository';
+import { IRefreshTokenRepository } from '../../../domain/repositories/IRefreshTokenRepository';
 import { IPasswordHasher } from '../../ports/IPasswordHasher';
-import ApiError from '../../../domain/errors/apiError';
+import { IAccessTokenService } from '../../ports/IAccessTokenService';
+import { DomainError } from '../../../domain/errors/DomainError';
+import { Role } from '../../../domain/entities/User';
+import { RefreshToken } from '../../../domain/value-objects/RefreshToken';
+import { AccessToken } from '../../../domain/value-objects/AccessToken';
+
+export interface LoginDto {
+  email: string;
+  password: string;
+  activeRole: Role;
+  deviceInfo?: string;
+}
+
+export interface LoginResult {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    surname: string;
+    activeRole: Role;
+  };
+}
 
 export class LoginUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
-    private readonly tokenService: ITokenService,
-    private readonly tokenRepo: ITokenRepository,
-    private readonly passwordHasher: IPasswordHasher
+    private readonly refreshTokenRepo: IRefreshTokenRepository,
+    private readonly passwordHasher: IPasswordHasher,
+    private readonly accessTokenService: IAccessTokenService,
   ) {}
 
-  async execute(
-    email: string,
-    password: string
-  ): Promise<{
-    accessToken: string;
-    refreshToken: string;
-    deviceId: string;
-    user: any;
-  }> {
-    const user = await this.userRepo.findByEmail(email, role);
-    if (!user) throw ApiError.NotFound('User not found');
+  async execute(dto: LoginDto): Promise<LoginResult> {
+    // 1. Найти юзера
+    const user = await this.userRepo.findByEmail(dto.email);
+    if (!user) throw new DomainError('Invalid email or password');
 
-    const isValid = await this.passwordHasher.compare(password, user.hashedPassword);
-    if (!isValid) throw ApiError.Unauthorized('Incorrect password');
+    // 2. Проверить пароль
+    if (!user.hashedPassword) {
+      throw new DomainError('This account uses OAuth. Please login with Google.');
+    }
+    const isValid = await this.passwordHasher.compare(dto.password, user.hashedPassword);
+    if (!isValid) throw new DomainError('Invalid email or password');
 
-    if (!user.isActivated) {
-      throw ApiError.Unauthorized('Account not activated');
+    // 3. Проверить верификацию email
+    if (!user.isEmailVerified) {
+      throw new DomainError('Please verify your email before logging in');
     }
 
-    // 1. Генерируем токены (ITokenService)
-    const tokens = this.tokenService.generateTokens({
+    // 4. Проверить роль
+    if (!user.hasRole(dto.activeRole)) {
+      throw new DomainError(`User does not have role: ${dto.activeRole}`);
+    }
+
+    // 5. Access token через value object
+    const accessTokenVO = AccessToken.create({
       userId: user.id,
-      email: user.email,
-      role: user.role
+      activeRole: dto.activeRole,
+    });
+    const accessToken = this.accessTokenService.generateAccessToken(accessTokenVO.payload);
+
+    // 6. Refresh token через value object — без внешних зависимостей
+    const refreshToken = RefreshToken.generate();
+
+    await this.refreshTokenRepo.create({
+      userId: user.id,
+      tokenHash: refreshToken.hash,
+      deviceInfo: dto.deviceInfo ?? null,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
-    // 2. Сохраняем refresh token в БД (ITokenRepository)
-    await this.tokenRepo.save(
-      user.id,
-      tokens.refreshToken,
-      tokens.deviceId,
-      user.role
-    );
-
     return {
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      deviceId: tokens.deviceId,
+      accessToken,
+      refreshToken: refreshToken.raw,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         surname: user.surname,
-        role: user.role
-      }
+        activeRole: dto.activeRole,
+      },
     };
   }
 }

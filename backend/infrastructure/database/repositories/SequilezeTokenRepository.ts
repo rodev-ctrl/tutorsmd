@@ -1,7 +1,7 @@
 // infrastructure/database/repositories/SequelizeTokenRepository.ts
 
 import bcrypt from 'bcrypt';
-import { ITokenRepository } from '../../../domain/repositories/InterfaceTokenRepository';
+import { ITokenRepository } from '../../../domain/repositories/IRefreshTokenRepository';
 import TokenClientModel from '../models/tokenModel';
 import TokenTutorModel from '../models/tokenTutorModel';
 import ApiError from '../../../domain/errors/apiError';

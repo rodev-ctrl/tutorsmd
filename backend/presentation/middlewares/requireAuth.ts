@@ -1,9 +1,10 @@
-import { RequestHandler } from "express";
-import { ITokenService } from "../../application/ports/ITokenService";
+import { NextFunction, Request, Response, RequestHandler } from "express";
+import { IAccessTokenService } from "../../application/ports/IAccessTokenService";
 import ApiError from "../../domain/errors/apiError";
+import { Role } from '../../domain/entities/User';
 
-export const requireAuth = (tokenService: ITokenService): RequestHandler => {
-  return async (req, _res, next) => {
+export const requireAuth = (accessTokenService: IAccessTokenService): RequestHandler => {
+  return async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -12,17 +13,25 @@ export const requireAuth = (tokenService: ITokenService): RequestHandler => {
     }
 
     const accessToken = authHeader.split(" ")[1];
-    const userData = tokenService.validateAccessToken(accessToken);
+    const userData = accessTokenService.verifyAccessToken(accessToken);
 
     if (!userData) {
       return next(ApiError.Unauthorized("Invalid AccessToken"));
     }
 
-    req.user = userData; // теперь тип совпадает
+    req.user = userData; 
     return next();
   } catch {
     return next(ApiError.Unauthorized("Session not found"));
   }
 }
+};
+
+export const requireRole = (role: Role) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    if (req.user?.activeRole !== role) {
+      return next(ApiError.Unauthorized("Invalid Role"));
+    }
+    next();
 };
 

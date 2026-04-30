@@ -3,27 +3,30 @@ import ApiError from "../../domain/errors/apiError";
 import { v4 as uuidv4 } from "uuid";
 
 import * as Types from "../../interfaces/InterfaceAuthController";
-import AuthService from "../../infrastructure/service/authService";
-import TokenService from "../../infrastructure/service/tokenService";
-
+// import AuthService from "../../infrastructure/service/authService";
+// import TokenService from "../../infrastructure/service/tokenService";
+import I
 
 
 type Role = "client" | "tutor";
 
 export class AuthController {
 
-    constructor () {}
-    static async login(req:Request<{}, any, Types.LoginBody>, res:Response) {
+    constructor (
+      private readonly loginUseCase: ; 
+    ) {}
+    async login(req:Request<{}, any, Types.LoginBody>, res:Response) {
 
         const { email, password, role } = req.body;
         if (!role) throw ApiError.BadRequest("Invalid role");
         if (!email) throw ApiError.BadRequest("Invalid email");
         if (!password) throw ApiError.BadRequest("Invalid password");
       
-        const clientData = await AuthService.login(
+        const clientData = await this.loginUseCase.execute(
           email,
           password,
-          role as Role
+          role,
+          "",
         );
       
         res.cookie("refreshToken", clientData.refreshToken, {

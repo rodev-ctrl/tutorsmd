@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { ITokenService } from '../../../application/ports/ITokenService';
+import { ITokenService } from '../../../application/ports/IAccessTokenService';
 
 export const socketAuthMiddleware = (tokenService: ITokenService) => {
   return async (socket: Socket, next: (err?: Error) => void) => {
