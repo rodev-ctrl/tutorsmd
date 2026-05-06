@@ -44,6 +44,10 @@ export class Email {
     return new Email(normalized);
   }
 
+  static fromPersistence(raw: string): Email {
+    return new Email(raw);
+  }
+
   get value(): string {
     return this._value;
   }

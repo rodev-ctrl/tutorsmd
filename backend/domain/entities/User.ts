@@ -90,7 +90,7 @@ export class User {
   }
 
   changeEmail(newEmail: string): User {
-    const emailVO = new Email(newEmail);
+    const emailVO = Email.create(newEmail);
     if (this.props.email.equals(emailVO)) {
       throw new DomainError('New email is the same as current');
     }
@@ -237,7 +237,7 @@ export class User {
       name: User.validateName(props.name),
       surname: User.validateSurname(props.surname),
       username: User.validateUsername(props.username),
-      email: new Email(props.email),
+      email: Email.create(props.email),
       hashedPassword: props.hashedPassword,
       roles: User.validateRoles(props.roles),
       isEmailVerified: false,
@@ -249,12 +249,13 @@ export class User {
   }
 
   static restore(props: RestoreUserProps): User {
+    
     return new User({
       id: new UserId(props.id),
       name: props.name,
       surname: props.surname,
       username: props.username,
-      email: new Email(props.email),
+      email: Email.fromPersistence(props.email),
       hashedPassword: props.hashedPassword,
       roles: Object.freeze([...props.roles]),
       isEmailVerified: props.isEmailVerified,
