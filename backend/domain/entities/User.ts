@@ -1,9 +1,11 @@
+// domain/entities/User.ts
 import { DomainError } from '../errors/DomainError';
 import { Email } from '../value-objects/Email';
 import { UserId } from '../value-objects/UserId';
 
 export type Role = 'client' | 'tutor' | 'admin';
 export type AuthProvider = 'local' | 'google' | 'github';
+export type LanguageCode = 'en' | 'de' | 'ru';
 
 interface UserProps {
   id: UserId;
@@ -16,6 +18,7 @@ interface UserProps {
   isEmailVerified: boolean;
   authProvider: AuthProvider;
   timezone: string;
+  languageCode: LanguageCode;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,6 +33,7 @@ interface CreateUserProps {
   authProvider: AuthProvider;
   roles: Role[];
   timezone?: string;
+  languageCode?: LanguageCode;
 }
 
 interface RestoreUserProps {
@@ -43,9 +47,12 @@ interface RestoreUserProps {
   isEmailVerified: boolean;
   authProvider: AuthProvider;
   timezone: string;
+  languageCode: LanguageCode;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const ALLOWED_LANGUAGES: LanguageCode[] = ['en', 'de', 'ru'];
 
 export class User {
   private readonly props: UserProps;
@@ -66,6 +73,7 @@ export class User {
   get isEmailVerified(): boolean { return this.props.isEmailVerified; }
   get authProvider(): AuthProvider { return this.props.authProvider; }
   get timezone(): string { return this.props.timezone; }
+  get languageCode(): LanguageCode { return this.props.languageCode; }
   get createdAt(): Date { return new Date(this.props.createdAt); }
   get updatedAt(): Date { return new Date(this.props.updatedAt); }
   get fullName(): string { return `${this.props.name} ${this.props.surname}`; }
@@ -90,14 +98,14 @@ export class User {
   }
 
   changeEmail(newEmail: string): User {
-    const emailVO = new Email(newEmail);
+    const emailVO = Email.create(newEmail);
     if (this.props.email.equals(emailVO)) {
       throw new DomainError('New email is the same as current');
     }
     return new User({
       ...this.props,
       email: emailVO,
-      isEmailVerified: false, // сбрасывается при смене email
+      isEmailVerified: false,
       updatedAt: new Date(),
     });
   }
@@ -131,6 +139,17 @@ export class User {
     return new User({
       ...this.props,
       timezone: User.validateTimezone(timezone),
+      updatedAt: new Date(),
+    });
+  }
+
+  changeLanguageCode(languageCode: LanguageCode): User {
+    if (!ALLOWED_LANGUAGES.includes(languageCode)) {
+      throw new DomainError(`Unsupported language code: ${languageCode}`);
+    }
+    return new User({
+      ...this.props,
+      languageCode,
       updatedAt: new Date(),
     });
   }
@@ -237,29 +256,32 @@ export class User {
       name: User.validateName(props.name),
       surname: User.validateSurname(props.surname),
       username: User.validateUsername(props.username),
-      email: new Email(props.email),
+      email: Email.create(props.email),
       hashedPassword: props.hashedPassword,
       roles: User.validateRoles(props.roles),
       isEmailVerified: false,
       authProvider: props.authProvider,
       timezone: User.validateTimezone(props.timezone ?? 'UTC'),
+      languageCode: props.languageCode ?? 'de',
       createdAt: now,
       updatedAt: now,
     });
   }
 
+  // Восстановление из БД — без повторной валидации
   static restore(props: RestoreUserProps): User {
     return new User({
       id: new UserId(props.id),
       name: props.name,
       surname: props.surname,
       username: props.username,
-      email: new Email(props.email),
+      email: Email.fromPersistence(props.email),
       hashedPassword: props.hashedPassword,
-      roles: Object.freeze([...props.roles]),
+      roles: Object.freeze([...new Set(props.roles)]),
       isEmailVerified: props.isEmailVerified,
       authProvider: props.authProvider,
       timezone: props.timezone,
+      languageCode: props.languageCode,
       createdAt: new Date(props.createdAt),
       updatedAt: new Date(props.updatedAt),
     });

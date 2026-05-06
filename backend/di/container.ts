@@ -1,65 +1,182 @@
 // di/container.ts
 
-// Infrastructure — Repositories
-import { SequelizeUserRepository } from '../infrastructure/database/repositories/SequelizeUserRepository';
-import { SequelizeBookingRepository } from '../infrastructure/database/repositories/SequelizeBookingRepository';
+import { prisma } from '../infrastructure/database/prismaClient';
 
-// Infrastructure — Services (adapters implementing port interfaces)
-import { NodemailerEmailService } from '../infrastructure/service/NodemailerEmailService';
-import { JwtTokenService } from '../infrastructure/service/JwtTokenService';
-import { UuidGenerator } from '../infrastructure/service/UuidGenerator';
-import { BcryptPasswordHasher } from '../infrastructure/security/BcryptPasswordHasher';
+// ========== INFRASTRUCTURE — Repositories ==========
+import { PrismaUserRepository } from '../infrastructure/database/repositories/PrismaUserRepository';
+import { PrismaClientRepository } from '../infrastructure/database/repositories/PrismaClientRepository';
+import { PrismaTutorRepository } from '../infrastructure/database/repositories/PrismaTutorRepository';
+import { PrismaRefreshTokenRepository } from '../infrastructure/database/repositories/PrismaRefreshTokenRepository';
+import { PrismaEmailVerificationRepository } from '../infrastructure/database/repositories/PrismaEmailVerificationRepository';
 
-// Application — Use Cases
-import { RegisterClientUseCase } from '../application/usecases/auth/RegisterClientUse';
-import { LoginUseCase } from '../application/usecases/auth/LoginUseCase';
-import { ActivateAccountUseCase } from '../application/usecases/auth/ActivateAccountUseCase';
-import { ChangePasswordUseCase } from '../application/usecases/auth/ChangePasswordUseCase';
-import { CreateBookingUseCase } from '../application/usecases/booking/CreateBookingUseCase';
+// ========== INFRASTRUCTURE — Services ==========
+import { NodemailerEmailService } from '../infrastructure/email/NodemailerEmailService';
+import { JwtAccessTokenService } from '../infrastructure/service/JwtAccessTokenService';
+import { UUIDGenerator } from '../infrastructure/security/UUIDGenerator';
+import { Argon2PasswordHasher } from '../infrastructure/security/Argon2PasswordHasher';
+import { PrismaUnitOfWork } from '../infrastructure/database/PrismaUnitOfWork';
 
-// Presentation — Controllers
-import { AuthController } from '../presentation/controllers/authController';
-import { SequelizeTokenRepository } from '../infrastructure/database/repositories/SequilezeTokenRepository';
-import { LogoutUseCase } from '../application/usecases/auth/LogoutuseCase';
-import { RefreshTokenUseCase } from '../application/usecases/auth/RefreshTokenUseCase';
+// ========== INFRASTRUCTURE — Profile Creators ==========
+import { ClientProfileCreator } from '../infrastructure/profile-creators/ClientProfileCreator';
+import { TutorProfileCreator } from '../infrastructure/profile-creators/TutorProfileCreator';
 
-// ========== REPOSITORIES ==========
-const userRepo = new SequelizeUserRepository();
-const tokenRepo = new SequelizeTokenRepository();
-const bookingRepo = new SequelizeBookingRepository();
+// ========== APPLICATION — Use Cases ==========
+// ======== AUTH ===============================
+import { RegisterUserUseCase } from '../application/usecases/auth/registration/RegisterUserUseCase';
+import { ActivateAccountUseCase } from '../application/usecases/auth/activation/ActivateAccountUseCase';
+import { LoginUseCase } from '../application/usecases/auth/login/LoginUseCase';
+import { LogoutUseCase } from '../application/usecases/auth/login/LogoutUseCase';
+import { RefreshTokenUseCase } from '../application/usecases/auth/token/RefreshTokenUseCase';
+import { ChangePasswordUseCase } from '../application/usecases/auth/password/ChangePasswordUseCase';
+import { SwitchRoleUseCase } from '../application/usecases/auth/login/SwitchRoleUseCase';
+import { GetActiveSessionsUseCase } from '../application/usecases/auth/token/GetActiveSessionsUseCase';
+import { RevokeSessionUseCase } from '../application/usecases/auth/token/RevokeSessionUseCase';
+import { RevokeAllSessionsUseCase } from '../application/usecases/auth/token/RevokeAllSessionsUseCase';
+import { ForgotPasswordUseCase } from '../application/usecases/auth/password/ForgotPasswordUseCase';
+import { ResetPasswordUseCase } from '../application/usecases/auth/password/ResetPasswordUseCase';
+import { RequestEmailChangeUseCase } from '../application/usecases/auth/email/RequestEmailChangeUseCase';
+import { ConfirmEmailChangeUseCase } from '../application/usecases/auth/email/ConfirmEmailChangeUseCase';
 
-// ========== SERVICES ==========
+
+// ========== PRESENTATION — Controllers ==========
+import { AuthController } from '../presentation/controllers/auth/AuthController';
+
+// ─────────────────────────────────────────────
+// REPOSITORIES
+// ─────────────────────────────────────────────
+const userRepo = new PrismaUserRepository(prisma);
+const clientRepo = new PrismaClientRepository(prisma);
+const tutorRepo = new PrismaTutorRepository(prisma);
+const refreshTokenRepo = new PrismaRefreshTokenRepository(prisma);
+const emailVerificationRepo = new PrismaEmailVerificationRepository(prisma);
+
+// ─────────────────────────────────────────────
+// SERVICES
+// ─────────────────────────────────────────────
 const emailService = new NodemailerEmailService();
-const tokenService = new JwtTokenService();
-const uuidGenerator = new UuidGenerator();
-const passwordHasher = new BcryptPasswordHasher();
+const accessTokenService = new JwtAccessTokenService();
+const idGenerator = new UUIDGenerator();
+const passwordHasher = new Argon2PasswordHasher();
+const unitOfWork = new PrismaUnitOfWork(prisma);
 
-// ========== USE CASES ==========
-const registerClientUseCase = new RegisterClientUseCase(userRepo, emailService, uuidGenerator, passwordHasher);
-const loginUseCase = new LoginUseCase(userRepo, tokenService, tokenRepo, passwordHasher);
-const logoutUseCase = new LogoutUseCase(tokenService);
-const refreshTokenUseCase = new RefreshTokenUseCase(tokenRepo, tokenService);
-const activateAccountUseCase = new ActivateAccountUseCase(userRepo);
-const changePasswordUseCase = new ChangePasswordUseCase(userRepo, tokenService, passwordHasher);
-const createBookingUseCase = new CreateBookingUseCase(bookingRepo, userRepo, uuidGenerator);
+// ─────────────────────────────────────────────
+// PROFILE CREATORS
+// ─────────────────────────────────────────────
+const clientProfileCreator = new ClientProfileCreator(clientRepo);
+const tutorProfileCreator = new TutorProfileCreator(tutorRepo);
 
-// ========== CONTROLLERS ==========
-// AuthController пока использует старый сервисный подход напрямую
-const authController = new AuthController();
+// ─────────────────────────────────────────────
+// USE CASES — Auth
+// ─────────────────────────────────────────────
+const registerClientUseCase = new RegisterUserUseCase(
+  userRepo,
+  clientProfileCreator,
+  emailVerificationRepo,
+  emailService,
+  idGenerator,
+  passwordHasher,
+  unitOfWork,
+);
 
-// ========== EXPORT ==========
-export {
-  // Controllers
-  authController,
+const registerTutorUseCase = new RegisterUserUseCase(
+  userRepo,
+  tutorProfileCreator,
+  emailVerificationRepo,
+  emailService,
+  idGenerator,
+  passwordHasher,
+  unitOfWork,
+);
 
-  tokenService,
+const activateAccountUseCase = new ActivateAccountUseCase(
+  userRepo,
+  emailVerificationRepo,
+);
 
-  // Use Cases (для будущей инъекции в controllers)
+const loginUseCase = new LoginUseCase(
+  userRepo,
+  refreshTokenRepo,
+  passwordHasher,
+  accessTokenService,
+);
+
+const logoutUseCase = new LogoutUseCase(
+    refreshTokenRepo
+);
+
+const refreshTokenUseCase = new RefreshTokenUseCase(
+  userRepo,
+  refreshTokenRepo,
+  accessTokenService
+);
+
+const changePasswordUseCase = new ChangePasswordUseCase(
+  userRepo,
+  refreshTokenRepo,
+  passwordHasher,
+);
+
+const switchRoleUseCase = new SwitchRoleUseCase(
+  userRepo,
+  accessTokenService
+)
+
+const getActiveSessionsUseCase = new GetActiveSessionsUseCase(refreshTokenRepo);
+const revokeSessionUseCase = new RevokeSessionUseCase(refreshTokenRepo);
+const revokeAllSessionsUseCase = new RevokeAllSessionsUseCase(refreshTokenRepo);
+ 
+
+const forgotPasswordUseCase = new ForgotPasswordUseCase(
+  userRepo, 
+  passwordResetRepo,
+  emailService, 
+  idGenerator,
+);
+ 
+const resetPasswordUseCase = new ResetPasswordUseCase(
+  userRepo, refreshTokenRepo, passwordHasher,
+);
+ 
+const requestEmailChangeUseCase = new RequestEmailChangeUseCase(
+  userRepo, emailService, idGenerator,
+);
+ 
+const confirmEmailChangeUseCase = new ConfirmEmailChangeUseCase(userRepo);
+ 
+
+// ─────────────────────────────────────────────
+// CONTROLLERS
+// ─────────────────────────────────────────────
+
+const authController = new AuthController(
   registerClientUseCase,
-  loginUseCase,
+  registerTutorUseCase,
   activateAccountUseCase,
-  changePasswordUseCase,
+  loginUseCase,
   logoutUseCase,
   refreshTokenUseCase,
-  createBookingUseCase
+  switchRoleUseCase,
+  changePasswordUseCase,
+  forgotPasswordUseCase,
+  resetPasswordUseCase,
+  getActiveSessionsUseCase,
+  revokeSessionUseCase,
+  revokeAllSessionsUseCase,
+);
+
+
+// ─────────────────────────────────────────────
+// EXPORTS
+// ─────────────────────────────────────────────
+export {
+  prisma,
+  authController,
+  // use cases экспортируем если нужны в других контроллерах
+  registerClientUseCase,
+  registerTutorUseCase,
+  activateAccountUseCase,
+  loginUseCase,
+  logoutUseCase,
+  refreshTokenUseCase,
+  changePasswordUseCase,
 };

@@ -97,3 +97,15 @@ model EmailChange {
 
   @@map("email_changes")
 }
+
+model PasswordReset {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  link      String   @unique @db.VarChar(64)
+  expiresAt DateTime @db.Timestamptz()
+  createdAt DateTime @default(now()) @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_resets")
+}

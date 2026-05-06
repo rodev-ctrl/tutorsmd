@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+
+  redis:
+    image: redis:7
+    container_name: tutors-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:15
+    container_name: tutors-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: Website
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+  tutors-backend:
+    build: ./backend
+    container_name: tutors-backend
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: "postgresql://postgres:12345@localhost:5432/Website?connection_limit=10&pool_timeout=30"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "7898:7898"
+
+  tutors-frontend:
+    build: ./frontend
+    container_name: tutors-frontend
+    restart: always
+    ports:
+      - "3000:80"
+
+  chat-backend:
+    build: ./chatForUsers/backend
+    container_name: chat-backend
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL="postgresql://postgres:12345@localhost:5432/Website?connection_limit=10&pool_timeout=30"
+
+    ports:
+      - "9000:9000"
+
+  chat-frontend:
+    build: ./chatForUsers/frontend
+    container_name: chat-frontend
+    restart: always
+    ports:
+      - "5173:80"
+
+volumes:
+  pg-data:
+  redis-data:

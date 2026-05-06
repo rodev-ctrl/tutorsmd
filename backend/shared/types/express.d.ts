@@ -1,8 +1,10 @@
-import type { TokenPayload } from '../../infrastructure/service/tokenService'; // или откуда у тебя payload
+import { AccessTokenPayload } from '../domain/value-objects/AccessToken';
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: TokenPayload; // ВАЖНО: не ClientAttributes|TutorAttributes, а то, что реально кладёшь в req.user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AccessTokenPayload;
+    }
   }
 }
 
