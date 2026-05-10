@@ -1,6 +1,6 @@
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
 import { IRefreshTokenRepository } from '../../../../domain/repositories/IRefreshTokenRepository';
-import { IAccessTokenService } from '../../../ports/IAccessTokenService';
+import { IAccessTokenService } from '../../../ports/token/IAccessTokenFactory';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { Role } from '../../../../domain/entities/User';
 import { RefreshToken } from '../../../../domain/value-objects/RefreshToken';
