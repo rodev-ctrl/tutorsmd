@@ -1,4 +1,6 @@
 enum LessonStatus {
+  pending
+  pending_reschedule
   confirmed
   in_progress
   completed
@@ -47,6 +49,8 @@ model Lesson {
   recurringScheduleId String?      @db.Uuid @map("recurring_schedule_id")
   scheduledAt         DateTime     @db.Timestamptz() @map("scheduled_at")
   durationMinutes     Int          @default(60) @map("duration_minutes")
+  proposedScheduledAt DateTime?    @db.Timestamptz() @map("proposed_scheduled_at")
+  proposedExpiresAt   DateTime?    @db.Timestamptz() @map("proposed_expires_at")
   startedAt           DateTime?    @db.Timestamptz() @map("started_at")
   completedAt         DateTime?    @db.Timestamptz() @map("completed_at")
   createdAt           DateTime     @default(now()) @db.Timestamptz() @map("created_at")
