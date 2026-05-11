@@ -1,11 +1,12 @@
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
 import { IRefreshTokenRepository } from '../../../../domain/repositories/IRefreshTokenRepository';
 import { IPasswordHasher } from '../../../ports/IPasswordHasher';
-import { IAccessTokenService } from '../../../ports/IAccessTokenService';
+import { IAccessTokenService } from '../../../ports/token/IAccessTokenFactory';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { Role } from '../../../../domain/entities/User';
 import { RefreshToken } from '../../../../domain/value-objects/RefreshToken';
 import { AccessToken } from '../../../../domain/value-objects/AccessToken';
+import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
 
 export interface LoginDto {
   email: string;
@@ -32,6 +33,7 @@ export class LoginUseCase {
     private readonly refreshTokenRepo: IRefreshTokenRepository,
     private readonly passwordHasher: IPasswordHasher,
     private readonly accessTokenService: IAccessTokenService,
+    private readonly refreshTokenFactory: IRefreshTokenFactory
   ) {}
 
   async execute(dto: LoginDto): Promise<LoginResult> {
@@ -62,9 +64,7 @@ export class LoginUseCase {
       activeRole: dto.activeRole,
     });
     const accessToken = this.accessTokenService.generateAccessToken(accessTokenVO.payload);
-
-    // 6. Refresh token через value object — без внешних зависимостей
-    const refreshToken = RefreshToken.generate();
+    const refreshToken = this.refreshTokenFactory.generate();
 
     await this.refreshTokenRepo.create({
       userId: user.id,
