@@ -1,11 +1,13 @@
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
 import { IEmailVerificationRepository } from '../../../../domain/repositories/IEmailVerificationRepository';
 import { DomainError } from '../../../../domain/errors/DomainError';
+import { IUnitOfWork } from '../../../ports/IUnitOfWork';
 
 export class ActivateAccountUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly emailVerificationRepo: IEmailVerificationRepository,
+    private readonly unitOfWork: IUnitOfWork
   ) {}
 
   async execute(token: string): Promise<void> {
@@ -33,10 +35,9 @@ export class ActivateAccountUseCase {
     // 5. Активировать через domain method
     const activatedUser = user.verifyEmail();
 
-    // 6. Сохранить
-    await this.userRepo.save(activatedUser);
-
-    // 7. Удалить токен — он больше не нужен
-    await this.emailVerificationRepo.deleteByUserId(verification.userId);
+    await this.unitOfWork.run(async () => {
+      await this.userRepo.save(activatedUser);
+      await this.emailVerificationRepo.deleteByUserId(verification.userId);
+    });
   }
 }

@@ -1,5 +1,5 @@
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
-import { IAccessTokenService } from '../../../ports/IAccessTokenService';
+import { IAccessTokenService } from '../../../ports/token/IAccessTokenFactory';
 import { AccessToken } from '../../../../domain/value-objects/AccessToken';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { Role } from '../../../../domain/entities/User';
