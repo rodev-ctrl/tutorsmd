@@ -26,11 +26,10 @@ interface LessonProps {
   durationMinutes: number;
   recurringScheduleId: string | null;
   rescheduledFromId: string | null;
-  quizId: string | null;
   roomId: string | null;
   cancellationReason: string | null;
-  proposedScheduledAt: Date | null  // тьютор предлагает это время
-  proposedExpiresAt: Date | null    // до когда клиент должен ответить
+  proposedScheduledAt: Date | null;
+  proposedExpiresAt: Date | null;
   startedAt: Date | null;
   completedAt: Date | null;
   createdAt: Date;
@@ -47,16 +46,14 @@ interface CreateLessonProps {
   durationMinutes?: number;
   recurringScheduleId?: string | null;
   rescheduledFromId?: string | null;
-  quizId?: string | null;
 }
 
 interface RestoreLessonProps extends LessonProps {}
 
-// Минимальное окно бронирования — 2 часа до урока
-const MIN_BOOKING_HOURS = 2;
-// Окно для фиксации no_show — с +15мин до +24ч от scheduledAt
+const MIN_LESSON_HOURS = 2;
 const NO_SHOW_WINDOW_MIN_MINUTES = 15;
 const NO_SHOW_WINDOW_MAX_HOURS = 24;
+const START_WINDOW_MINUTES = 5;
 
 export class Lesson {
   private readonly props: LessonProps;
@@ -65,6 +62,7 @@ export class Lesson {
     this.props = props;
   }
 
+  // --- Getters ---
 
   get id(): string { return this.props.id; }
   get clientId(): string { return this.props.clientId; }
@@ -76,49 +74,91 @@ export class Lesson {
   get durationMinutes(): number { return this.props.durationMinutes; }
   get recurringScheduleId(): string | null { return this.props.recurringScheduleId; }
   get rescheduledFromId(): string | null { return this.props.rescheduledFromId; }
-  get quizId(): string | null { return this.props.quizId; }
   get roomId(): string | null { return this.props.roomId; }
   get cancellationReason(): string | null { return this.props.cancellationReason; }
-  get startedAt(): Date | null { return this.props.startedAt ? new Date(this.props.startedAt) : null; }
-  get completedAt(): Date | null { return this.props.completedAt ? new Date(this.props.completedAt) : null; }
+  get proposedScheduledAt(): Date | null {
+    return this.props.proposedScheduledAt ? new Date(this.props.proposedScheduledAt) : null;
+  }
+  get proposedExpiresAt(): Date | null {
+    return this.props.proposedExpiresAt ? new Date(this.props.proposedExpiresAt) : null;
+  }
+  get startedAt(): Date | null {
+    return this.props.startedAt ? new Date(this.props.startedAt) : null;
+  }
+  get completedAt(): Date | null {
+    return this.props.completedAt ? new Date(this.props.completedAt) : null;
+  }
   get createdAt(): Date { return new Date(this.props.createdAt); }
   get updatedAt(): Date { return new Date(this.props.updatedAt); }
 
+  // --- Status checks ---
+
   get isTrial(): boolean { return this.props.type === 'trial'; }
   get isRegular(): boolean { return this.props.type === 'regular'; }
-
+  get isPending(): boolean { return this.props.status === 'pending'; }
+  get isPendingReschedule(): boolean { return this.props.status === 'pending_reschedule'; }
   get isConfirmed(): boolean { return this.props.status === 'confirmed'; }
   get isInProgress(): boolean { return this.props.status === 'in_progress'; }
   get isCompleted(): boolean { return this.props.status === 'completed'; }
   get isCancelled(): boolean {
-    return this.props.status === 'cancelled_by_client' || this.props.status === 'cancelled_by_tutor';
+    return this.props.status === 'cancelled_by_client' ||
+           this.props.status === 'cancelled_by_tutor';
   }
   get isRescheduled(): boolean { return this.props.status === 'rescheduled'; }
   get isTerminal(): boolean {
-    return ['completed', 'cancelled_by_client', 'cancelled_by_tutor', 'rescheduled', 'no_show_client', 'no_show_tutor']
-      .includes(this.props.status);
+    return [
+      'completed',
+      'cancelled_by_client',
+      'cancelled_by_tutor',
+      'rescheduled',
+      'no_show_client',
+      'no_show_tutor',
+    ].includes(this.props.status);
   }
 
+  // --- Capability checks ---
 
+  canBeCancelledByClient(): boolean {
+    return this.isConfirmed && !this.isWithinModificationWindow();
+  }
 
-  /*
-    Тьютор/клиент нажимает "Начать урок"
-    Доступно за 5 минут до scheduledAt
-   */
+  canBeRescheduled(): boolean {
+    return this.isConfirmed && !this.isWithinModificationWindow();
+  }
+
+  canBeStarted(): boolean {
+    if (!this.isConfirmed) return false;
+    const windowStart = new Date(
+      this.props.scheduledAt.getTime() - START_WINDOW_MINUTES * 60 * 1000
+    );
+    return new Date() >= windowStart;
+  }
+
+  // --- Business methods ---
+
+  confirm(): Lesson {
+    if (!this.isPending) {
+      throw new DomainError('Only pending lessons can be confirmed');
+    }
+    return new Lesson({
+      ...this.props,
+      status: 'confirmed',
+      updatedAt: new Date(),
+    });
+  }
+
   start(roomId: string): Lesson {
     if (!this.isConfirmed) {
       throw new DomainError('Only confirmed lessons can be started');
     }
-
-    const fiveMinutesBefore = new Date(this.props.scheduledAt.getTime() - 5 * 60 * 1000);
-    if (new Date() < fiveMinutesBefore) {
-      throw new DomainError('Lesson can only be started 5 minutes before scheduled time');
+    if (!this.canBeStarted()) {
+      throw new DomainError(
+        `Lesson can only be started ${START_WINDOW_MINUTES} minutes before scheduled time`
+      );
     }
-
     if (!roomId || roomId.trim().length === 0) {
       throw new DomainError('Room ID is required to start a lesson');
     }
-
     return new Lesson({
       ...this.props,
       status: 'in_progress',
@@ -128,14 +168,10 @@ export class Lesson {
     });
   }
 
-  /**
-   * Тьютор нажимает "Завершить урок"
-   */
   complete(): Lesson {
     if (!this.isInProgress) {
       throw new DomainError('Only in_progress lessons can be completed');
     }
-
     return new Lesson({
       ...this.props,
       status: 'completed',
@@ -144,21 +180,15 @@ export class Lesson {
     });
   }
 
-  /**
-   * Отмена клиентом
-   * Недоступно за < 2ч до урока
-   */
   cancelByClient(reason?: string): Lesson {
     if (!this.isConfirmed) {
-      throw new DomainError('Only confirmed lessons can be cancelled');
+      throw new DomainError('Only confirmed lessons can be cancelled by client');
     }
-
-    if (this.isWithinCancellationWindow()) {
+    if (this.isWithinModificationWindow()) {
       throw new DomainError(
-        `Cannot cancel less than ${MIN_BOOKING_HOURS} hours before the lesson`
+        `Cannot cancel less than ${MIN_LESSON_HOURS} hours before the lesson`
       );
     }
-
     return new Lesson({
       ...this.props,
       status: 'cancelled_by_client',
@@ -167,14 +197,10 @@ export class Lesson {
     });
   }
 
-  /**
-   * Отмена тьютором
-   */
   cancelByTutor(reason?: string): Lesson {
-    if (!this.isConfirmed) {
-      throw new DomainError('Only confirmed lessons can be cancelled');
+    if (!this.isConfirmed && !this.isPending) {
+      throw new DomainError('Only pending or confirmed lessons can be cancelled by tutor');
     }
-
     return new Lesson({
       ...this.props,
       status: 'cancelled_by_tutor',
@@ -183,37 +209,56 @@ export class Lesson {
     });
   }
 
-  /**
-   * Перенос урока
-   * Недоступно за < 2ч до урока
-   */
   reschedule(): Lesson {
-    if (!this.isConfirmed) {
-      throw new DomainError('Only confirmed lessons can be rescheduled');
-    }
-
-    if (this.isWithinCancellationWindow()) {
+    if (!this.isConfirmed && !this.isPendingReschedule) {
       throw new DomainError(
-        `Cannot reschedule less than ${MIN_BOOKING_HOURS} hours before the lesson`
+        'Only confirmed or pending_reschedule lessons can be rescheduled'
       );
     }
-
+    if (this.isConfirmed && this.isWithinModificationWindow()) {
+      throw new DomainError(
+        `Cannot reschedule less than ${MIN_LESSON_HOURS} hours before the lesson`
+      );
+    }
     return new Lesson({
       ...this.props,
       status: 'rescheduled',
+      proposedScheduledAt: null,
+      proposedExpiresAt: null,
       updatedAt: new Date(),
     });
   }
 
-  /**
-   * Тьютор фиксирует что студент не пришёл
-   * Доступно с +15мин до +24ч от scheduledAt
-   */
+  proposeReschedule(proposedAt: Date, expiresAt: Date): Lesson {
+    if (!this.isConfirmed) {
+      throw new DomainError('Only confirmed lessons can be proposed for reschedule');
+    }
+    return new Lesson({
+      ...this.props,
+      status: 'pending_reschedule',
+      proposedScheduledAt: proposedAt,
+      proposedExpiresAt: expiresAt,
+      updatedAt: new Date(),
+    });
+  }
+
+  declineReschedule(): Lesson {
+    if (!this.isPendingReschedule) {
+      throw new DomainError('No pending reschedule proposal');
+    }
+    return new Lesson({
+      ...this.props,
+      status: 'confirmed',
+      proposedScheduledAt: null,
+      proposedExpiresAt: null,
+      updatedAt: new Date(),
+    });
+  }
+
   markNoShowClient(): Lesson {
     if (!this.isInProgress && !this.isConfirmed) {
       throw new DomainError('Cannot mark no-show for this lesson status');
     }
-
     const now = new Date();
     const windowStart = new Date(
       this.props.scheduledAt.getTime() + NO_SHOW_WINDOW_MIN_MINUTES * 60 * 1000
@@ -221,15 +266,16 @@ export class Lesson {
     const windowEnd = new Date(
       this.props.scheduledAt.getTime() + NO_SHOW_WINDOW_MAX_HOURS * 60 * 60 * 1000
     );
-
     if (now < windowStart) {
-      throw new DomainError('Too early to mark no-show. Wait at least 15 minutes after scheduled time');
+      throw new DomainError(
+        `Too early to mark no-show. Wait at least ${NO_SHOW_WINDOW_MIN_MINUTES} minutes`
+      );
     }
-
     if (now > windowEnd) {
-      throw new DomainError('No-show window expired (24 hours after scheduled time)');
+      throw new DomainError(
+        `No-show window expired (${NO_SHOW_WINDOW_MAX_HOURS} hours after scheduled time)`
+      );
     }
-
     return new Lesson({
       ...this.props,
       status: 'no_show_client',
@@ -237,16 +283,10 @@ export class Lesson {
     });
   }
 
-  /**
-   * Студент фиксирует что тьютор не пришёл
-   * Создаётся Appeal — статус lesson не меняется напрямую
-   * Этот метод только для admin-разбирательства
-   */
   markNoShowTutor(): Lesson {
     if (!this.isInProgress && !this.isConfirmed) {
       throw new DomainError('Cannot mark no-show for this lesson status');
     }
-
     return new Lesson({
       ...this.props,
       status: 'no_show_tutor',
@@ -254,22 +294,16 @@ export class Lesson {
     });
   }
 
-  /**
-   * Автозавершение через cron — если никто не нажал "Завершить"
-   */
   autoComplete(): Lesson {
     if (!this.isInProgress && !this.isConfirmed) {
       throw new DomainError('Cannot auto-complete lesson with this status');
     }
-
     const expectedEnd = new Date(
       this.props.scheduledAt.getTime() + this.props.durationMinutes * 60 * 1000
     );
-
     if (new Date() < expectedEnd) {
       throw new DomainError('Lesson has not ended yet');
     }
-
     return new Lesson({
       ...this.props,
       status: 'completed',
@@ -278,37 +312,24 @@ export class Lesson {
     });
   }
 
-  private isWithinCancellationWindow(): boolean {
-    const windowMs = MIN_BOOKING_HOURS * 60 * 60 * 1000;
-    return new Date().getTime() > this.props.scheduledAt.getTime() - windowMs;
+  // --- Private helpers ---
+
+  private isWithinModificationWindow(): boolean {
+    const windowMs = MIN_LESSON_HOURS * 60 * 60 * 1000;
+    return Date.now() > this.props.scheduledAt.getTime() - windowMs;
   }
 
-  canBeCancelledByClient(): boolean {
-    return this.isConfirmed && !this.isWithinCancellationWindow();
-  }
-
-  canBeRescheduled(): boolean {
-    return this.isConfirmed && !this.isWithinCancellationWindow();
-  }
-
-  canBeStarted(): boolean {
-    if (!this.isConfirmed) return false;
-    const fiveMinutesBefore = new Date(this.props.scheduledAt.getTime() - 5 * 60 * 1000);
-    return new Date() >= fiveMinutesBefore;
-  }
-
-
+  // --- Factory methods ---
 
   static create(props: CreateLessonProps): Lesson {
     if (props.clientId === props.tutorId) {
       throw new DomainError('Client and tutor cannot be the same person');
     }
 
-    // Урок должен быть минимум через 2 часа
-    const minScheduledAt = new Date(Date.now() + MIN_BOOKING_HOURS * 60 * 60 * 1000);
+    const minScheduledAt = new Date(Date.now() + MIN_LESSON_HOURS * 60 * 60 * 1000);
     if (props.scheduledAt < minScheduledAt) {
       throw new DomainError(
-        `Lesson must be scheduled at least ${MIN_BOOKING_HOURS} hours in advance`
+        `Lesson must be scheduled at least ${MIN_LESSON_HOURS} hours in advance`
       );
     }
 
@@ -323,14 +344,15 @@ export class Lesson {
       tutorId: props.tutorId,
       subjectId: props.subjectId,
       type: props.type,
-      status: 'confirmed',
-      scheduledAt: props.scheduledAt,
+      status: 'pending',
+      scheduledAt: props.scheduledAt ?? null,
       durationMinutes: props.durationMinutes ?? 60,
       recurringScheduleId: props.recurringScheduleId ?? null,
       rescheduledFromId: props.rescheduledFromId ?? null,
-      quizId: props.quizId ?? null,
       roomId: null,
       cancellationReason: null,
+      proposedScheduledAt: null,
+      proposedExpiresAt: null,
       startedAt: null,
       completedAt: null,
       createdAt: now,
