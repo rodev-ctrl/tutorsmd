@@ -4,14 +4,12 @@ export interface CreateFeedbackData {
   tutorId: string;
   comment: string | null;
   isCorrect: boolean | null;
-  earnedPoints: number | null;
 }
 
 export interface UpdateFeedbackData {
   answerId: string;
   comment: string | null;
   isCorrect: boolean | null;
-  earnedPoints: number | null;
 }
 
 export interface IQuizAnswerFeedbackRepository {
