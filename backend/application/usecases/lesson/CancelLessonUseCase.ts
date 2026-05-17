@@ -22,8 +22,6 @@ export class CancelLessonUseCase {
     await this.cancelLesson(lesson, dto);
   }
 
-  // Внутренний метод — принимает уже загруженный урок
-  // Используется из CancelRegularScheduleUseCase внутри транзакции
   async cancelLesson(lesson: Lesson, dto: Omit<CancelLessonDto, 'lessonId'>): Promise<void> {
     if (dto.role === 'client') {
       const clientId = new ClientId(dto.cancelledByUserId);

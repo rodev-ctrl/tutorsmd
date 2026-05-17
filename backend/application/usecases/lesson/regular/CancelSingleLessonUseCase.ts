@@ -1,5 +1,3 @@
-// application/usecases/lesson/CancelSingleLessonUseCase.ts
-// Отмена одного урока из серии — расписание остаётся активным
 import { ILessonRepository } from '../../../../domain/repositories/ILessonRepository';
 import { ClientId, TutorId, LessonId } from '../../../../domain/value-objects/EntityId';
 import { NotFoundError } from '../../../../domain/errors/NotFoundError';
