@@ -1,5 +1,5 @@
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
-import { IAccessTokenService } from '../../../ports/token/IAccessTokenFactory';
+import { IAccessTokenFactory } from '../../../ports/token/IAccessTokenFactory';
 import { AccessToken } from '../../../../domain/value-objects/AccessToken';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { Role } from '../../../../domain/entities/User';
@@ -11,7 +11,7 @@ export interface SwitchRoleResult {
 export class SwitchRoleUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
-    private readonly accessTokenService: IAccessTokenService,
+    private readonly accessTokenService: IAccessTokenFactory,
   ) {}
 
   async execute(userId: string, newRole: Role): Promise<SwitchRoleResult> {
@@ -30,7 +30,7 @@ export class SwitchRoleUseCase {
       activeRole: newRole,
     });
 
-    const accessToken = this.accessTokenService.generateAccessToken(
+    const accessToken = this.accessTokenService.generate(
       accessTokenVO.payload
     );
 

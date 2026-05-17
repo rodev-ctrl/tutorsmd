@@ -1,5 +1,3 @@
-// infrastructure/database/repositories/PrismaUserRepository.ts
-
 import { PrismaClient } from '../../../../generated/prisma';
 import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { User, Role, AuthProvider } from '../../../domain/entities/User';
@@ -92,6 +90,8 @@ export class PrismaUserRepository implements IUserRepository {
       name: record.name,
       surname: record.surname,
       username: record.username,
+      avatarUrl: record.avatarUrl,
+      languageCode: record.languageCode,
       hashedPassword: record.passwordHash,
       authProvider: record.authProvider as AuthProvider,
       roles: record.userRoles.map((r: any) => r.role as Role),

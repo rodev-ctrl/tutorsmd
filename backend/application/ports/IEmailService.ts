@@ -1,6 +1,10 @@
+import { LanguageCode } from "../../domain/entities/User";
+
 export interface IEmailService {
-  sendActivationLink(email: string, link: string, language?: string): Promise<void>;
-  sendPasswordResetLink(email: string, link: string, language?: string): Promise<void>;
-  sendEmailChangeConfirmation(email: string, link: string, language?: string): Promise<void>;
-  sendLessonReminder(email: string, link: string, time: string, language?: string): Promise<void>;
+  sendActivationLink(email: string, link: string, language?: LanguageCode): Promise<void>;
+  sendPasswordResetLink(email: string, link: string, language?: LanguageCode): Promise<void>;
+  sendEmailChangeConfirmation(email: string, link: string, language?: LanguageCode): Promise<void>;
+  sendLessonReminder(email: string, time: string, language?: LanguageCode): Promise<void>;
+  sendTutorApproved(email: string, language?: LanguageCode): Promise<void>;   // ← добавить
+  sendTutorRejected(email: string, language?: LanguageCode): Promise<void>;   // ← добавить
 }

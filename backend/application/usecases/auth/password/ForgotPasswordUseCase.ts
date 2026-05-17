@@ -2,7 +2,7 @@ import { IUserRepository } from '../../../../domain/repositories/IUserRepository
 import { IEmailService } from '../../../ports/IEmailService';
 import { IUUIDGenerator } from '../../../ports/IUUIDGenerator';
 import { IPasswordResetRepository } from '../../../../domain/repositories/IPasswordResetRepository';
-import { RefreshToken } from '../../../../domain/value-objects/RefreshToken';
+import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
 
 export interface ForgotPasswordDto {
   email: string;
@@ -14,6 +14,7 @@ export class ForgotPasswordUseCase {
     private readonly passwordResetRepo: IPasswordResetRepository,
     private readonly emailService: IEmailService,
     private readonly idGenerator: IUUIDGenerator,
+    private readonly tokenFactory: IRefreshTokenFactory,
   ) {}
 
   async execute(dto: ForgotPasswordDto): Promise<void> {
@@ -29,7 +30,9 @@ export class ForgotPasswordUseCase {
     const resetToken = this.idGenerator.generate();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 минут
 
-    const tokenHash = RefreshToken.fromRaw(resetToken).hash;
+    const token = this.tokenFactory.fromRaw(resetToken);
+    const tokenHash = token.hash;
+
     // 4. Сохранить токен (upsert — один активный токен на юзера)
     await this.passwordResetRepo.upsert({
       userId: user.id,

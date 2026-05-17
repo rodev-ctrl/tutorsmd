@@ -1,13 +1,14 @@
 // application/usecases/auth/email/RequestEmailChangeUseCase.ts
 import crypto from 'crypto';
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
-import { IEmailChangeRepository } from '../../../../domain/repositories/IEmailChangeRepository';
+import { IEmailChangeRepository } from '../../../../domain/repositories/email/IEmailChangeRepository';
 import { IEmailService } from '../../../ports/IEmailService';
 import { IUUIDGenerator } from '../../../ports/IUUIDGenerator';
 import { Email } from '../../../../domain/value-objects/Email';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { ConflictError } from '../../../../domain/errors/ConflictError';
 import { NotFoundError } from '../../../../domain/errors/NotFoundError';
+import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
 
 export interface RequestEmailChangeDto {
   userId: string;
@@ -21,6 +22,7 @@ export class RequestEmailChangeUseCase {
     private readonly emailChangeRepo: IEmailChangeRepository,
     private readonly emailService: IEmailService,
     private readonly idGenerator: IUUIDGenerator,
+    private readonly tokenFactory: IRefreshTokenFactory,
   ) {}
 
   async execute(dto: RequestEmailChangeDto): Promise<void> {
@@ -47,16 +49,13 @@ export class RequestEmailChangeUseCase {
 
     // 6. Генерация токена
     const rawToken = this.idGenerator.generate();
-    const linkEmail = crypto
-      .createHash('sha256')
-      .update(rawToken)
-      .digest('hex');
+    const linkEmail = this.tokenFactory.fromRaw(rawToken);
 
     // 7. Сохранить запрос (upsert — один активный на юзера)
     await this.emailChangeRepo.upsert({
       userId: dto.userId,
       newEmail: newEmailVO.value,
-      link: linkEmail,
+      link: linkEmail.hash,
       expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 часов
     });
 

@@ -1,5 +1,5 @@
 import { PrismaClient } from '../../../../generated/prisma';
-import { IEmailVerificationRepository } from '../../../domain/repositories/IEmailVerificationRepository';
+import { IEmailVerificationRepository } from '../../../domain/repositories/email/IEmailVerificationRepository';
 
 export class PrismaEmailVerificationRepository implements IEmailVerificationRepository {
   constructor(private readonly prisma: PrismaClient) {}

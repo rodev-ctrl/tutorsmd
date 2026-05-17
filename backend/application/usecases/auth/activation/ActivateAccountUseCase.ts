@@ -1,5 +1,5 @@
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
-import { IEmailVerificationRepository } from '../../../../domain/repositories/IEmailVerificationRepository';
+import { IEmailVerificationRepository } from '../../../../domain/repositories/email/IEmailVerificationRepository';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { IUnitOfWork } from '../../../ports/IUnitOfWork';
 

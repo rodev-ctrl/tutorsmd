@@ -1,10 +1,11 @@
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
 import { IRefreshTokenRepository } from '../../../../domain/repositories/IRefreshTokenRepository';
-import { IAccessTokenService } from '../../../ports/token/IAccessTokenFactory';
+import { IAccessTokenFactory } from '../../../ports/token/IAccessTokenFactory';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { Role } from '../../../../domain/entities/User';
 import { RefreshToken } from '../../../../domain/value-objects/RefreshToken';
 import { AccessToken } from '../../../../domain/value-objects/AccessToken';
+import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
 
 export interface RefreshResult {
   accessToken: string;
@@ -15,15 +16,17 @@ export class RefreshTokenUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly refreshTokenRepo: IRefreshTokenRepository,
-    private readonly accessTokenService: IAccessTokenService,
+    private readonly accessTokenFactory: IAccessTokenFactory,
+    private readonly refreshTokenFactory: IRefreshTokenFactory,
   ) {}
 
   async execute(rawToken: string, activeRole: Role): Promise<RefreshResult> {
     // 1. Хэшируем и ищем в БД
-    const incomingToken = RefreshToken.fromRaw(rawToken).hash;
-    const record = await this.refreshTokenRepo.findByTokenHash(incomingToken);
+    const incomingToken = this.refreshTokenFactory.fromRaw(rawToken);
+    const record = await this.refreshTokenRepo.findByTokenHash(incomingToken.hash);
 
     if (!record) throw new DomainError('Session not found');
+
     if (record.revokedAt) {
       // Это признак кражи токена — кто-то использует старый токен
       // Разлогиниваем ВСЕ сессии этого юзера
@@ -43,9 +46,10 @@ export class RefreshTokenUseCase {
     }
 
     // 4. Rotation — отозвать старый, создать новый
-    await this.refreshTokenRepo.revoke(incomingToken);
+    await this.refreshTokenRepo.revoke(incomingToken.hash);
 
-    const newToken = RefreshToken.generate();
+    const newToken = this.refreshTokenFactory.generate();
+
     await this.refreshTokenRepo.create({
       userId: user.id,
       tokenHash: newToken.hash,
@@ -55,7 +59,7 @@ export class RefreshTokenUseCase {
 
     // 5. Новый access token
     const accessTokenVO = AccessToken.create({ userId: user.id, activeRole });
-    const accessToken = this.accessTokenService.generateAccessToken(accessTokenVO.payload);
+    const accessToken = this.accessTokenFactory.generate(accessTokenVO.payload);
 
     return {
       accessToken,

@@ -22,7 +22,6 @@ export class PrismaClientRepository implements IClientRepository {
       data: {
         id: client.id,
         userId: client.userId,
-        avatarUrl: client.avatarUrl,
         createdAt: client.createdAt,
         updatedAt: client.updatedAt,
       },
@@ -33,7 +32,6 @@ export class PrismaClientRepository implements IClientRepository {
     await this.prisma.client.update({
       where: { id: client.id },
       data: {
-        avatarUrl: client.avatarUrl,
         updatedAt: client.updatedAt,
       },
     });
@@ -47,7 +45,6 @@ export class PrismaClientRepository implements IClientRepository {
     return Client.restore({
       id: record.id,
       userId: record.userId,
-      avatarUrl: record.avatarUrl,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     });

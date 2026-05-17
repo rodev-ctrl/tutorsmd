@@ -1,7 +1,7 @@
 // domain/entities/User.ts
 import { DomainError } from '../errors/DomainError';
 import { Email } from '../value-objects/Email';
-import { UserId } from '../value-objects/UserId';
+import { UserId } from '../value-objects/EntityId';
 
 export type Role = 'client' | 'tutor' | 'admin';
 export type AuthProvider = 'local' | 'google' | 'github';

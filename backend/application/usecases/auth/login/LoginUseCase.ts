@@ -1,7 +1,7 @@
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
 import { IRefreshTokenRepository } from '../../../../domain/repositories/IRefreshTokenRepository';
 import { IPasswordHasher } from '../../../ports/IPasswordHasher';
-import { IAccessTokenService } from '../../../ports/token/IAccessTokenFactory';
+import { IAccessTokenFactory } from '../../../ports/token/IAccessTokenFactory';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { Role } from '../../../../domain/entities/User';
 import { RefreshToken } from '../../../../domain/value-objects/RefreshToken';
@@ -32,7 +32,7 @@ export class LoginUseCase {
     private readonly userRepo: IUserRepository,
     private readonly refreshTokenRepo: IRefreshTokenRepository,
     private readonly passwordHasher: IPasswordHasher,
-    private readonly accessTokenService: IAccessTokenService,
+    private readonly accessTokenService: IAccessTokenFactory,
     private readonly refreshTokenFactory: IRefreshTokenFactory
   ) {}
 
@@ -63,7 +63,7 @@ export class LoginUseCase {
       userId: user.id,
       activeRole: dto.activeRole,
     });
-    const accessToken = this.accessTokenService.generateAccessToken(accessTokenVO.payload);
+    const accessToken = this.accessTokenService.generate(accessTokenVO.payload);
     const refreshToken = this.refreshTokenFactory.generate();
 
     await this.refreshTokenRepo.create({

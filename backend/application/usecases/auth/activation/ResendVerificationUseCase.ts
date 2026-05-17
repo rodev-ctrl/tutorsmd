@@ -1,41 +1,36 @@
-import { IEmailVerificationRepository } from "../../../../domain/repositories/IEmailVerificationRepository";
+// application/usecases/auth/activation/ResendVerificationUseCase.ts
+
+import { IEmailVerificationRepository } from "../../../../domain/repositories/email/IEmailVerificationRepository";
 import { IUserRepository } from "../../../../domain/repositories/IUserRepository";
 import { IEmailService } from "../../../ports/IEmailService";
 import { IUnitOfWork } from "../../../ports/IUnitOfWork";
-import { IUUIDGenerator } from "../../../ports/IUUIDGenerator";
-import { IRefreshTokenFactory } from "../../../ports/token/IRefreshTokenFactory";
+import { IEmailVerificationTokenFactory } from "../../../ports/email/IEmailVerificationTokenFactory";
 
 export class ResendVerificationUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly emailVerificationRepo: IEmailVerificationRepository,
     private readonly emailService: IEmailService,
-    private readonly idGenerator: IUUIDGenerator,
     private readonly unitOfWork: IUnitOfWork,
-    private readonly refreshTokenFactory: IRefreshTokenFactory
+    private readonly verificationTokenFactory: IEmailVerificationTokenFactory,
   ) {}
 
   async execute(email: string): Promise<void> {
-    // 1. Найти юзера — тихий возврат защищает от email enumeration
     const user = await this.userRepo.findByEmail(email);
-    if (!user) return;
-
-    // 2. Уже активирован — не нужно отправлять
+    if (!user) return; // защита от email enumeration
     if (user.isEmailVerified) return;
 
-    // 3. Генерация нового токена
-    const tokenHash = this.refreshTokenFactory.generate();
-    // 4. Upsert — заменяет старый токен новым атомарно
+    const token = this.verificationTokenFactory.generateVerificationToken();
+
     await this.unitOfWork.run(async () => {
       await this.emailVerificationRepo.upsert({
         userId: user.id,
-        link: tokenHash,
+        link: token.hash,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
     });
 
-
-    const link = `${process.env.CLIENT_URL}/activate/${rawToken}`;
+    const link = `${process.env.CLIENT_URL}/activate/${token.raw}`;
     await this.emailService.sendActivationLink(user.email, link, user.languageCode);
   }
 }
