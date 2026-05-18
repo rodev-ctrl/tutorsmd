@@ -1,6 +1,6 @@
 import { RefreshToken } from '../../../domain/value-objects/RefreshToken';
 
 export interface IRefreshTokenFactory {
-  generate(): RefreshToken;
+  generateRefreshToken(): RefreshToken;
   fromRaw(raw: string): RefreshToken;
 }

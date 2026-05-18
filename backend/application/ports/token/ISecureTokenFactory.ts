@@ -4,6 +4,7 @@ export interface SecureToken {
 }
 
 export interface ISecureTokenFactory {
+  generateRefreshToken(): SecureToken;
   generateVerificationToken(): SecureToken
   generatePasswordResetToken(): SecureToken
   generateEmailChangeToken(): SecureToken
