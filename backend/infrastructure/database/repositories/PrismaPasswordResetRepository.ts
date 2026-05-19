@@ -4,21 +4,21 @@ import { IPasswordResetRepository } from '../../../domain/repositories/IPassword
 export class PrismaPasswordResetRepository implements IPasswordResetRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async upsert(data: { userId: string; link: string; expiresAt: Date }): Promise<void> {
+  async upsert(data: { userId: string; tokenHash: string; expiresAt: Date }): Promise<void> {
     await this.prisma.passwordReset.upsert({
       where: { userId: data.userId },
-      update: { linkHash: data.link, expiresAt: data.expiresAt },
-      create: { userId: data.userId, linkHash: data.link, expiresAt: data.expiresAt },
+      update: { linkHash: data.tokenHash, expiresAt: data.expiresAt },
+      create: { userId: data.userId, linkHash: data.tokenHash, expiresAt: data.expiresAt },
     });
   }
  
 
-  async findByLink(link: string): Promise<{ userId: string; link: string; expiresAt: Date } | null> {
+  async findByTokenHash(tokenHash: string): Promise<{ userId: string; tokenHash: string; expiresAt: Date } | null> {
     const record = await this.prisma.passwordReset.findUnique({
-      where: { linkHash: link },
+      where: { linkHash: tokenHash },
       select: { userId: true, expiresAt: true },
     });
-    return record ? { ...record, link } : null;
+    return record ? { ...record, tokenHash } : null;
   }
 
   async deleteByUserId(userId: string): Promise<void> {

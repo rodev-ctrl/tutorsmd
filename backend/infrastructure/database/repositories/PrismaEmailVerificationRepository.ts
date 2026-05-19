@@ -4,29 +4,29 @@ import { IEmailVerificationRepository } from '../../../domain/repositories/email
 export class PrismaEmailVerificationRepository implements IEmailVerificationRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async upsert(data: { userId: string; link: string; expiresAt: Date }): Promise<void> {
+  async upsert(data: { userId: string; tokenHash: string; expiresAt: Date }): Promise<void> {
     await this.prisma.emailVerification.upsert({
       where: { userId: data.userId },
       update: {
-        linkHash: data.link,
+        linkHash: data.tokenHash,
         expiresAt: data.expiresAt,
       },
       create: {
         userId: data.userId,
-        linkHash: data.link,
+        linkHash: data.tokenHash,
         expiresAt: data.expiresAt,
       },
     });
   }
 
-  async findByLink(link: string): Promise<{ userId: string; link: string; expiresAt: Date } | null> {
+  async findByTokenHash(tokenHash: string): Promise<{ userId: string; tokenHash: string; expiresAt: Date } | null> {
     const record = await this.prisma.emailVerification.findUnique({
-      where: { linkHash: link },
+      where: { linkHash: tokenHash },
     });
     if (!record) return null;
     return {
       userId: record.userId,
-      link: record.linkHash,
+      tokenHash: record.linkHash,
       expiresAt: record.expiresAt,
     };
   }

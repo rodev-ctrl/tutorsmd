@@ -63,10 +63,11 @@ export class RegisterUserUseCase {
 
     await this.unitOfWork.run(async () => {
       await this.userRepo.create(user);
+      // Create user/tutor
       await this.profileCreator.createProfile(userId, profileId);
       await this.emailVerificationRepo.upsert({
         userId,
-        link: verificationToken.hash, // SHA-256 hash в БД
+        tokenHash: verificationToken.hash, // SHA-256 hash в БД
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
     });

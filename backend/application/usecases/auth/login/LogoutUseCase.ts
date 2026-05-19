@@ -1,5 +1,4 @@
 import { IRefreshTokenRepository } from '../../../../domain/repositories/IRefreshTokenRepository';
-import { RefreshToken } from '../../../../domain/value-objects/RefreshToken';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
 

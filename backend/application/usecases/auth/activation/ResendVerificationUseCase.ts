@@ -25,7 +25,7 @@ export class ResendVerificationUseCase {
     await this.unitOfWork.run(async () => {
       await this.emailVerificationRepo.upsert({
         userId: user.id,
-        link: token.hash,
+        tokenHash: token.hash,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
     });
