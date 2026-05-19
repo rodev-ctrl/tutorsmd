@@ -2,17 +2,20 @@ import { IUserRepository } from '../../../../domain/repositories/IUserRepository
 import { IEmailVerificationRepository } from '../../../../domain/repositories/email/IEmailVerificationRepository';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { IUnitOfWork } from '../../../ports/IUnitOfWork';
+import { IEmailVerificationTokenFactory } from '../../../ports/email/IEmailVerificationTokenFactory';
 
 export class ActivateAccountUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly emailVerificationRepo: IEmailVerificationRepository,
-    private readonly unitOfWork: IUnitOfWork
+    private readonly unitOfWork: IUnitOfWork,
+    private readonly tokenFactory: IEmailVerificationTokenFactory
   ) {}
 
   async execute(token: string): Promise<void> {
     // 1. Найти запись верификации по токену
-    const verification = await this.emailVerificationRepo.findByLink(token);
+    const tokenHash = this.tokenFactory.hashRaw(token); 
+    const verification = await this.emailVerificationRepo.findByTokenHash(tokenHash);
     if (!verification) {
       throw new DomainError('Invalid activation link');
     }

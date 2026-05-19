@@ -1,22 +1,21 @@
-// application/usecases/auth/email/ConfirmEmailChangeUseCase.ts
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
 import { IEmailChangeRepository } from '../../../../domain/repositories/email/IEmailChangeRepository';
-import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { NotFoundError } from '../../../../domain/errors/NotFoundError';
 import { ConflictError } from '../../../../domain/errors/ConflictError';
+import { IEmailChangeTokenFactory } from '../../../ports/email/IEmailChangeTokenFactory';
 
 export class ConfirmEmailChangeUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly emailChangeRepo: IEmailChangeRepository,
-    private readonly tokenFactory: IRefreshTokenFactory,
+    private readonly tokenFactory: IEmailChangeTokenFactory,
   ) {}
 
   async execute(rawToken: string): Promise<void> {
-    const link = this.tokenFactory.fromRaw(rawToken);
+    const link = this.tokenFactory.hashRaw(rawToken);
 
-    const record = await this.emailChangeRepo.findByLink(link.hash);
+    const record = await this.emailChangeRepo.findByTokenHash(link);
     if (!record) throw new DomainError('Invalid or expired link');
 
     if (record.expiresAt < new Date()) {

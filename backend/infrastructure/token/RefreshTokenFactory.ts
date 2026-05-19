@@ -1,15 +1,13 @@
+import crypto from 'crypto';
 import { IRefreshTokenFactory } from '../../application/ports/token/IRefreshTokenFactory';
-import { ISecureTokenFactory } from '../../application/ports/token/ISecureTokenFactory';
 import { RefreshToken } from '../../domain/value-objects/RefreshToken';
 import { DomainError } from '../../domain/errors/DomainError';
 
 export class RefreshTokenFactory implements IRefreshTokenFactory {
-  constructor(
-    private readonly tokenFactory: ISecureTokenFactory,
-  ) {}
 
-  generate(): RefreshToken {
-    const { raw, hash } = this.tokenFactory.generateRefreshToken();
+   generate(): RefreshToken {
+    const raw  = crypto.randomBytes(32).toString('hex');
+    const hash = crypto.createHash('sha256').update(raw).digest('hex');
     return RefreshToken.fromParts(raw, hash);
   }
 
@@ -17,7 +15,7 @@ export class RefreshTokenFactory implements IRefreshTokenFactory {
     if (!raw || raw.trim().length === 0) {
       throw new DomainError('Refresh token cannot be empty');
     }
-    const hash = this.tokenFactory.hashRaw(raw);
+    const hash = crypto.createHash('sha256').update(raw).digest('hex');
     return RefreshToken.fromParts(raw, hash);
   }
 }

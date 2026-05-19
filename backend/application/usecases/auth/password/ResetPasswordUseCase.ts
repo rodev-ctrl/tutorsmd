@@ -2,11 +2,10 @@ import { IUserRepository } from '../../../../domain/repositories/IUserRepository
 import { IRefreshTokenRepository } from '../../../../domain/repositories/IRefreshTokenRepository';
 import { IPasswordResetRepository } from '../../../../domain/repositories/IPasswordResetRepository';
 import { IPasswordHasher } from '../../../ports/IPasswordHasher';
-import { ISecureTokenFactory } from '../../../ports/token/ISecureTokenFactory';
 import { Password } from '../../../../domain/value-objects/Password';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { NotFoundError } from '../../../../domain/errors/NotFoundError';
-import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
+import { IPasswordResetTokenFactory } from '../../../ports/email/IPasswordResetTokenFactory';
 
 export class ResetPasswordUseCase {
   constructor(
@@ -14,7 +13,7 @@ export class ResetPasswordUseCase {
     private readonly refreshTokenRepo: IRefreshTokenRepository,
     private readonly passwordResetRepo: IPasswordResetRepository,
     private readonly passwordHasher: IPasswordHasher,
-    private readonly tokenFactory: ISecureTokenFactory,
+    private readonly tokenFactory: IPasswordResetTokenFactory,
   ) {}
 
   async execute(rawToken: string, newPassword: string): Promise<void> {
@@ -25,7 +24,7 @@ export class ResetPasswordUseCase {
     const tokenHash = this.tokenFactory.hashRaw(rawToken);
 
     // 3. Найти запись
-    const record = await this.passwordResetRepo.findByLink(tokenHash);
+    const record = await this.passwordResetRepo.findByTokenHash(tokenHash);
     if (!record) throw new DomainError('Invalid or expired reset link');
 
     // 4. Проверить срок действия

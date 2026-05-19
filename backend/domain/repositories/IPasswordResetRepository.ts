@@ -1,18 +1,18 @@
 export interface UpsertPasswordResetDto {
   userId: string;
-  link: string;
+  tokenHash: string;
   expiresAt: Date;
 }
  
 export interface PasswordResetRecord {
   userId: string;
-  link: string;
+  tokenHash: string;
   expiresAt: Date;
 }
  
 export interface IPasswordResetRepository {
   upsert(data: UpsertPasswordResetDto): Promise<void>;
-  findByLink(link: string): Promise<PasswordResetRecord | null>;
+  findByTokenHash(tokenHash: string): Promise<PasswordResetRecord | null>;
   deleteByUserId(userId: string): Promise<void>;
 }
  

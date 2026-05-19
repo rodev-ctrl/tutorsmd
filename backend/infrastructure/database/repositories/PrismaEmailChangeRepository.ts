@@ -7,32 +7,32 @@ export class PrismaEmailChangeRepository implements IEmailChangeRepository {
   async upsert(data: {
     userId: string;
     newEmail: string;
-    link: string;
+    tokenHash: string;
     expiresAt: Date;
   }): Promise<void> {
     await this.prisma.emailChange.upsert({
       where: { userId: data.userId },
       update: {
         newEmail: data.newEmail,
-        linkHash: data.link,
+        linkHash: data.tokenHash,
         expiresAt: data.expiresAt,
       },
       create: {
         userId: data.userId,
         newEmail: data.newEmail,
-        linkHash: data.link,
+        linkHash: data.tokenHash,
         expiresAt: data.expiresAt,
       },
     });
   }
 
-  async findByLink(link: string): Promise<{
+  async findByTokenHash(tokenHash: string): Promise<{
     userId: string;
     newEmail: string;
     expiresAt: Date;
   } | null> {
     const record = await this.prisma.emailChange.findUnique({
-      where: { linkHash: link },
+      where: { linkHash: tokenHash },
       select: { userId: true, newEmail: true, expiresAt: true },
     });
     return record ?? null;
