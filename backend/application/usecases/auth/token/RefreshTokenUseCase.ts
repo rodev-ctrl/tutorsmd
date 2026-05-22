@@ -45,9 +45,11 @@ export class RefreshTokenUseCase {
       throw new DomainError(`User does not have role: ${activeRole}`);
     }
 
-    // 4. Rotation — отозвать старый, создать новый
+    // 4. Rotation — отозвать старый
     await this.refreshTokenRepo.revoke(incomingToken.hash);
-
+    
+  
+    // 5. Создать новый refreshToken
     const newToken = this.refreshTokenFactory.generate();
 
     await this.refreshTokenRepo.create({
@@ -58,8 +60,8 @@ export class RefreshTokenUseCase {
     });
 
     // 5. Новый access token
-    const accessTokenVO = AccessToken.create({ userId: user.id, activeRole });
-    const accessToken = this.accessTokenFactory.generate(accessTokenVO.payload);
+    const accessTokenV0 = AccessToken.create({ userId: user.id, activeRole });
+     const accessToken = this.accessTokenFactory.generate(accessTokenV0);
 
     return {
       accessToken,

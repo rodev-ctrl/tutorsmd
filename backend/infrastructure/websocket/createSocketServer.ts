@@ -1,3 +1,9 @@
+/////////////////////////////////////////////////////////////////////
+// io = весь WebSocket сервер. websocket-Layer. MANAGER FOR OBJECTS
+// socket = конкретное соединение конкретного клиента. Connection/SESSION OBJECT
+/////////////////////////////////////////////////////////////////////
+
+
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import http from "http";
@@ -16,6 +22,7 @@ import { createWebRtcHandler }   from "../../presentation/websocket/handlers/web
 import redis, { subClient } from "../redis/redisClient";
 import { GetSupportChatHistoryUseCase } from "../../application/usecases/support-chat/GetSupportChatHistoryUsecase";
 import { JoinSupportChatUseCase } from "../../application/usecases/support-chat/JoinSupportChatUseCase";
+import { CompleteLessonUseCase } from "../../application/usecases/lesson/CompleteLessonUseCase";
 
 // ── Конфиг из env ─────────────────────────────────────────────────────────────
 
@@ -92,6 +99,7 @@ interface SocketServerDeps {
   joinSupportChat:    JoinSupportChatUseCase;
   sendSupportMessage: SendSupportChatMessageUseCase;
   getSupportChatHistory:  GetSupportChatHistoryUseCase;
+  completeLessonUseCase:  CompleteLessonUseCase
 }
 
 // ── Фабрика ───────────────────────────────────────────────────────────────────
@@ -104,6 +112,7 @@ export const createSocketServer = ({
   joinSupportChat,
   sendSupportMessage,
   getSupportChatHistory,
+  completeLessonUseCase
 }: SocketServerDeps): SocketIOServer => {
   const allowedOrigins = (process.env.CLIENT_URL ?? "")
     .split(",")
@@ -165,7 +174,8 @@ export const createSocketServer = ({
 
     try {
       createSupportChatHandler(io, socket, joinSupportChat, sendSupportMessage, getSupportChatHistory, fileStorage);
-      createLessonHandler(io, socket, prisma);
+      createLessonHandler(io, socket, { completeLessonUseCase, fileStorage, prisma});
+    
       createBoardHandler(io, socket);
       createWebRtcHandler(io, socket);
     } catch (err) {

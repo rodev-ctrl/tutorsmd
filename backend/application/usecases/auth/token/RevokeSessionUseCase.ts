@@ -1,4 +1,5 @@
 import { DomainError } from "../../../../domain/errors/DomainError";
+import { ForbiddenError } from "../../../../domain/errors/ForbiddenError";
 import { NotFoundError } from "../../../../domain/errors/NotFoundError";
 import { IRefreshTokenRepository } from "../../../../domain/repositories/IRefreshTokenRepository";
 
@@ -13,6 +14,8 @@ export class RevokeSessionUseCase {
     if (!session || session.userId !== userId) {
       throw new NotFoundError('Session not found');
     }
+
+    if (session.userId !== userId) throw new ForbiddenError('Access denied');
 
     if (session.revokedAt) {
       throw new DomainError('Session already revoked');

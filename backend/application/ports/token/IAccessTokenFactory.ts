@@ -1,6 +1,6 @@
-import { AccessTokenPayload } from '../../../domain/value-objects/AccessToken';
+import { AccessToken, AccessTokenPayload } from '../../../domain/value-objects/AccessToken';
 
 export interface IAccessTokenFactory {
-  generate(payload: AccessTokenPayload): string;
+  generate(token: AccessToken): string;
   verify(token: string): AccessTokenPayload | null;
 }

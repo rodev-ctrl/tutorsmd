@@ -3,7 +3,7 @@ import { IAccessTokenFactory } from "../../application/ports/token/IAccessTokenF
 import ApiError from "../../domain/errors/apiError";
 import { Role } from '../../domain/entities/User';
 
-export const requireAuth = (accessTokenService: IAccessTokenFactory): RequestHandler => {
+export const requireAuth = (accessTokenFactory: IAccessTokenFactory): RequestHandler => {
   return async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
@@ -13,7 +13,7 @@ export const requireAuth = (accessTokenService: IAccessTokenFactory): RequestHan
     }
 
     const accessToken = authHeader.split(" ")[1];
-    const userData = accessTokenService.verify(accessToken);
+    const userData = accessTokenFactory.verify(accessToken);
 
     if (!userData) {
       return next(ApiError.Unauthorized("Invalid AccessToken"));

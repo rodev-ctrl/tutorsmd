@@ -4,7 +4,7 @@ import { IAccessTokenFactory } from "../../../application/ports/token/IAccessTok
 type SocketMiddleware = (socket: Socket, next: (err?: Error) => void) => void;
 
 export const socketAuthMiddleware = (
-  tokenService: IAccessTokenFactory
+  accessTokenFactory: IAccessTokenFactory
 ): SocketMiddleware => {
   return (socket: Socket, next: (err?: Error) => void): void => {
     const token = socket.handshake.auth.accessToken as string | undefined;
@@ -13,7 +13,7 @@ export const socketAuthMiddleware = (
       return next(new Error("Unauthorized: No token"));
     }
 
-    const payload = tokenService.verify(token);
+    const payload = accessTokenFactory.verify(token);
 
     if (!payload) {
       return next(new Error("Unauthorized: Invalid token"));

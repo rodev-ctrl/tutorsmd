@@ -20,6 +20,6 @@ export interface IRefreshTokenRepository {
   create(data: CreateRefreshTokenDto): Promise<void>;
   findByTokenHash(tokenHash: string): Promise<RefreshTokenRecord | null>;
   findActiveByUserId(userId: string): Promise<RefreshTokenRecord[]>;
-  revoke(tokenHash: string): Promise<void>;
+  revoke(tokenHash: string): Promise<boolean>;
   revokeAllByUserId(userId: string): Promise<void>;
 }

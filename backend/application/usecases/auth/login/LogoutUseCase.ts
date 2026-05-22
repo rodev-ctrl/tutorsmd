@@ -10,8 +10,15 @@ export class LogoutUseCase {
 
   async execute(rawToken: string): Promise<void> {
     const token = this.refreshTokenFactory.fromRaw(rawToken).hash;
+    
     const record = await this.refreshTokenRepo.findByTokenHash(token);
     if (!record) throw new DomainError('Session not found');
-    await this.refreshTokenRepo.revoke(token);
+    
+    const revoked = await this.refreshTokenRepo.revoke(token);
+    if (!revoked) {
+      // Токен уже был использован — признак кражи
+      await this.refreshTokenRepo.revokeAllByUserId(record.userId);
+      throw new DomainError('Token reuse detected. All sessions revoked.');
+    }
   }
 }

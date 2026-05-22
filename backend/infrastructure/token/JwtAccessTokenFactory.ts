@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { IAccessTokenFactory } from '../../application/ports/token/IAccessTokenFactory';
-import { AccessTokenPayload } from '../../domain/value-objects/AccessToken';
+import { AccessToken, AccessTokenPayload } from '../../domain/value-objects/AccessToken';
 
 export class JwtAccessTokenFactory implements IAccessTokenFactory {
   private readonly secret: string;
@@ -13,8 +13,8 @@ export class JwtAccessTokenFactory implements IAccessTokenFactory {
     this.expiresIn = process.env.JWT_ACCESS_EXPIRES_IN ?? '900';
   }
 
-  generate(payload: AccessTokenPayload): string {
-    return jwt.sign(payload, this.secret, { expiresIn: Number(this.expiresIn) });
+  generate(token: AccessToken): string {
+    return jwt.sign(token.payload, this.secret, { expiresIn: Number(this.expiresIn) });
   }
 
   verify(token: string): AccessTokenPayload | null {

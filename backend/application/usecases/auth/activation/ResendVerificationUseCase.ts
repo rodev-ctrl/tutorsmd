@@ -1,5 +1,3 @@
-// application/usecases/auth/activation/ResendVerificationUseCase.ts
-
 import { IEmailVerificationRepository } from "../../../../domain/repositories/email/IEmailVerificationRepository";
 import { IUserRepository } from "../../../../domain/repositories/IUserRepository";
 import { IEmailService } from "../../../ports/IEmailService";

@@ -11,7 +11,7 @@ export interface SwitchRoleResult {
 export class SwitchRoleUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
-    private readonly accessTokenService: IAccessTokenFactory,
+    private readonly accessTokenFactory: IAccessTokenFactory,
   ) {}
 
   async execute(userId: string, newRole: Role): Promise<SwitchRoleResult> {
@@ -25,15 +25,10 @@ export class SwitchRoleUseCase {
 
     // Выдаём новый access token с новой ролью
     // Refresh token НЕ меняется — как на листе
-    const accessTokenVO = AccessToken.create({
-      userId: user.id,
-      activeRole: newRole,
-    });
 
-    const accessToken = this.accessTokenService.generate(
-      accessTokenVO.payload
-    );
-
+    const accessTokenV0 = AccessToken.create({ userId: user.id, activeRole: newRole });
+    const accessToken = this.accessTokenFactory.generate(accessTokenV0);
+ 
     return { accessToken };
   }
 }

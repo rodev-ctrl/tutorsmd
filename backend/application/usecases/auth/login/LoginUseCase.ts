@@ -3,36 +3,18 @@ import { IRefreshTokenRepository } from '../../../../domain/repositories/IRefres
 import { IPasswordHasher } from '../../../ports/IPasswordHasher';
 import { IAccessTokenFactory } from '../../../ports/token/IAccessTokenFactory';
 import { DomainError } from '../../../../domain/errors/DomainError';
-import { Role } from '../../../../domain/entities/User';
-import { RefreshToken } from '../../../../domain/value-objects/RefreshToken';
+
 import { AccessToken } from '../../../../domain/value-objects/AccessToken';
 import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
+import { LoginDto, LoginResult } from '../../../dto/auth/LoginDto';
 
-export interface LoginDto {
-  email: string;
-  password: string;
-  activeRole: Role;
-  deviceInfo?: string;
-}
-
-export interface LoginResult {
-  accessToken: string;
-  refreshToken: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    surname: string;
-    activeRole: Role;
-  };
-}
 
 export class LoginUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly refreshTokenRepo: IRefreshTokenRepository,
     private readonly passwordHasher: IPasswordHasher,
-    private readonly accessTokenService: IAccessTokenFactory,
+    private readonly accessTokenFactory: IAccessTokenFactory,
     private readonly refreshTokenFactory: IRefreshTokenFactory
   ) {}
 
@@ -58,12 +40,8 @@ export class LoginUseCase {
       throw new DomainError(`User does not have role: ${dto.activeRole}`);
     }
 
-    // 5. Access token через value object
-    const accessTokenVO = AccessToken.create({
-      userId: user.id,
-      activeRole: dto.activeRole,
-    });
-    const accessToken = this.accessTokenService.generate(accessTokenVO.payload);
+    const accessTokenV0 = AccessToken.create({ userId: user.id, activeRole: dto.activeRole });
+    const accessToken = this.accessTokenFactory.generate(accessTokenV0);
     const refreshToken = this.refreshTokenFactory.generate();
 
     await this.refreshTokenRepo.create({

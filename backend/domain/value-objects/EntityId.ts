@@ -10,7 +10,7 @@ export class EntityId {
       throw new DomainError('Id cannot be empty');
     }
     if (!UUID_REGEX.test(value)) {
-      throw new DomainError(`Invalid UUID v4 format: ${value}`);
+      throw new DomainError(`Invalid UUID v7 format: ${value}`);
     }
     this._value = value;
   }

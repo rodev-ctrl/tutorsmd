@@ -1,5 +1,3 @@
-// presentation/controllers/IAuthController.ts
-
 import { Request, Response } from 'express';
 
 export interface IAuthController {
@@ -26,6 +24,7 @@ export interface IAuthController {
   // Email change
   requestEmailChange(req: Request, res: Response): Promise<void>;
   confirmEmailChange(req: Request, res: Response): Promise<void>;
+  resendVerification(req: Request, res: Response): Promise<void>;
 
   // Sessions
   getActiveSessions(req: Request, res: Response): Promise<void>;

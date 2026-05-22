@@ -1,5 +1,3 @@
-// presentation/controllers/AuthController.ts
-
 import { Request, Response } from 'express';
 import { IAuthController } from './IAuthController';
 import { RegisterUserUseCase } from '../../../application/usecases/auth/registration/RegisterUserUseCase';
@@ -8,14 +6,17 @@ import { LoginUseCase } from '../../../application/usecases/auth/login/LoginUseC
 import { LogoutUseCase } from '../../../application/usecases/auth/login/LogoutUseCase';
 import { RefreshTokenUseCase } from '../../../application/usecases/auth/token/RefreshTokenUseCase';
 import { SwitchRoleUseCase } from '../../../application/usecases/auth/login/SwitchRoleUseCase';
-import { ChangePasswordUseCase } from '../../../application/usecases/auth/ChangePasswordUseCase';
-import { ForgotPasswordUseCase } from '../../../application/usecases/auth/ForgotPasswordUseCase';
-import { ResetPasswordUseCase } from '../../../application/usecases/auth/ResetPasswordUseCase';
-import { IRefreshTokenRepository } from '../../../domain/repositories/IRefreshTokenRepository';
+import { ChangePasswordUseCase } from '../../../application/usecases/auth/password/ChangePasswordUseCase';
+import { ForgotPasswordUseCase } from '../../../application/usecases/auth/password/ForgotPasswordUseCase';
+import { ResetPasswordUseCase } from '../../../application/usecases/auth/password/ResetPasswordUseCase';
 import { Role } from '../../../domain/entities/User';
 import { GetActiveSessionsUseCase } from '../../../application/usecases/auth/token/GetActiveSessionsUseCase';
 import { RevokeSessionUseCase } from '../../../application/usecases/auth/token/RevokeSessionUseCase';
 import { RevokeAllSessionsUseCase } from '../../../application/usecases/auth/token/RevokeAllSessionsUseCase';
+import { RequestEmailChangeUseCase } from '../../../application/usecases/auth/email/RequestEmailChangeUseCase';
+import { ConfirmEmailChangeUseCase } from '../../../application/usecases/auth/email/ConfirmEmailChangeUseCase';
+import { ResendVerificationUseCase } from '../../../application/usecases/auth/activation/ResendVerificationUseCase';
+
 
 const REFRESH_COOKIE_OPTIONS = {
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней
@@ -23,6 +24,7 @@ const REFRESH_COOKIE_OPTIONS = {
   sameSite: 'lax' as const,
   secure: process.env.NODE_ENV === 'production',
 };
+
 
 export class AuthController implements IAuthController {
    constructor(
@@ -39,7 +41,12 @@ export class AuthController implements IAuthController {
     private readonly getActiveSessionsUseCase: GetActiveSessionsUseCase,
     private readonly revokeSessionUseCase: RevokeSessionUseCase,
     private readonly revokeAllSessionsUseCase: RevokeAllSessionsUseCase,
+    private readonly requestEmailChangeUseCase: RequestEmailChangeUseCase,
+    private readonly confirmEmailChangeUseCase: ConfirmEmailChangeUseCase,
+    private readonly resendVerificationUseCase: ResendVerificationUseCase
   ) {}
+
+  
   // ─── Registration ────────────────────────────────────────────
 
   async registerClient(req: Request, res: Response): Promise<void> {
@@ -175,7 +182,8 @@ export class AuthController implements IAuthController {
   }
 
   async resetPassword(req: Request, res: Response): Promise<void> {
-    const { token, newPassword } = req.body;
+    const { newPassword } = req.body;
+    const { token } = req.params;
 
     await this.resetPasswordUseCase.execute(token, newPassword);
 
@@ -185,14 +193,31 @@ export class AuthController implements IAuthController {
   // ─── Email Change ────────────────────────────────────────────
 
   async requestEmailChange(req: Request, res: Response): Promise<void> {
-    // TODO: EmailChangeUseCase
-    res.status(501).json({ message: 'Not implemented yet.' });
-  }
+  const userId = req.user!.userId;
+  const { newEmail, password } = req.body;
 
-  async confirmEmailChange(req: Request, res: Response): Promise<void> {
-    // TODO: ConfirmEmailChangeUseCase
-    res.status(501).json({ message: 'Not implemented yet.' });
-  }
+  await this.requestEmailChangeUseCase.execute({ userId, newEmail, password });
+
+  res.status(200).json({
+    message: 'Confirmation link sent to your new email address.',
+  });
+}
+
+async confirmEmailChange(req: Request, res: Response): Promise<void> {
+  const { token } = req.params;   
+
+  await this.confirmEmailChangeUseCase.execute(token);
+
+  res.status(200).json({ message: 'Email changed successfully.' });
+}
+
+async resendVerification(req: Request, res: Response): Promise<void> {
+  const { email } = req.body;
+
+  await this.resendVerificationUseCase.execute(email);
+
+  res.status(200).json({ message: 'Verification link sent' })
+}
 
   // ─── Sessions ────────────────────────────────────────────────
 

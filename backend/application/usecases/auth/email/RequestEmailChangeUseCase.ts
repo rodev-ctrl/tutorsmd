@@ -1,4 +1,3 @@
-// application/usecases/auth/email/RequestEmailChangeUseCase.ts
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
 import { IEmailChangeRepository } from '../../../../domain/repositories/email/IEmailChangeRepository';
 import { IEmailService } from '../../../ports/IEmailService';
