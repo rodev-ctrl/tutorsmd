@@ -22,11 +22,13 @@ import {
   presenceClear,
 } from "../../utils/redisPresence";
 import { clearBoardFromRedis } from "../board/BoardHandler";
-import { CompleteLessonUseCase }  from "../../../../application/usecases/lesson/CompleteLessonUseCase";
-import { IFileStorageFactory }    from "../../../../application/ports/file/IFileStorageFactory";
 import { ALLOWED_MIME_TYPES, PRESIGN_TTL_SECONDS, SIZE_LIMITS } from "../../../../domain/entities/file/fileConstants";
 import sanitize                   from "sanitize-filename";
 import { JoinLessonSchema, LessonContext, LessonHandlerDeps, LessonMessageSchema, PresignSchema } from "./validate/lesson.schema";
+import { DomainError } from "../../../../domain/errors/DomainError";
+import { NotFoundError } from "../../../../domain/errors/NotFoundError";
+import { ConflictError } from "../../../../domain/errors/ConflictError";
+import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError";
 
 
 // ── Resolve lesson context ────────────────────────────────────────────────────
@@ -34,7 +36,6 @@ import { JoinLessonSchema, LessonContext, LessonHandlerDeps, LessonMessageSchema
 const resolveLessonContext = async (
   prisma:   PrismaClient,
   lessonId: string,
-  userId: string
 ): Promise<LessonContext | null> => {
   const lesson = await prisma.lesson.findUnique({
     where:  { id: lessonId },
@@ -96,7 +97,7 @@ export const createLessonHandler = (
         return;
       }
 
-      const ctx = await resolveLessonContext(prisma, parsed.data.lessonId, user.id);
+      const ctx = await resolveLessonContext(prisma, parsed.data.lessonId);
       if (!ctx) {
         socket.emit("joinLessonError", { code: "NOT_FOUND", message: "Lesson not found" });
         return;
@@ -334,13 +335,21 @@ export const createLessonHandler = (
       const ctx = socket.data.lessonCtx as LessonContext | undefined;
       if (!ctx || ctx.lessonId !== parsed.data.lessonId) return;
 
-      
-      // CompleteLessonUseCase проверяет статус через domain entity
-      // Нужен tutor.id (не user.id) — берём из ctx
-      await completeLessonUseCase.execute({
-        lessonId: ctx.lessonId,
-        tutorId:  ctx.tutorId,
-      });
+     
+       // CompleteLessonUseCase проверяет статус, чтобы только "IN_PROGRESS" можно было завершить: IN_PROGRESS -> COMPLETED
+      try {
+        await completeLessonUseCase.execute({
+          lessonId: ctx.lessonId,
+          tutorId:  ctx.tutorId,
+        });
+      } catch (err) {
+        
+        if (err instanceof DomainError || err instanceof NotFoundError || err instanceof ConflictError || err instanceof UnauthorizedError) {
+          socket.emit("lesson:error", { code: "END_LESSON_FAILED", reason: err.message });
+          return;
+        }
+        throw err; // неожиданная ошибка — пусть safeHandler логирует
+      }
 
       await presenceClear(ctx.lessonId);
 

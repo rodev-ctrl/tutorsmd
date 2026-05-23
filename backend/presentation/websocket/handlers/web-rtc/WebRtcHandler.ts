@@ -1,5 +1,4 @@
-// presentation/websocket/handlers/webrtcHandler.ts
-//
+
 // Чистый сигнальный relay для WebRTC.
 // Сервер не интерпретирует payload — только пересылает в комнату урока.
 //

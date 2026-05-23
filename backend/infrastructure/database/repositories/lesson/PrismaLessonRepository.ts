@@ -26,7 +26,7 @@ export class PrismaLessonRepository implements ILessonRepository {
       orderBy: { scheduledAt: 'asc' },
     });
 
-    return records.map(this.toDomain);
+    return records.map(r => this.toDomain(r));
   }
 
   async existsConflict(
