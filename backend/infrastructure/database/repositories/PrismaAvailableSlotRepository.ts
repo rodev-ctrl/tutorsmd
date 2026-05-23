@@ -21,7 +21,7 @@ export class PrismaAvailableSlotRepository implements IAvailableSlotRepository {
       },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
     });
-    return records.map(this.toDomain);
+    return records.map(r => this.toDomain(r));
   }
 
   async existsConflict(
