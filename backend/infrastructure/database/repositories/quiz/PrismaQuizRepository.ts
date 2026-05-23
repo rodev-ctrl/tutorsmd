@@ -18,7 +18,7 @@ export class PrismaQuizRepository implements IQuizRepository {
       where: { tutorId },
       orderBy: { createdAt: 'desc' },
     });
-    return records.map(this.toDomain);
+    return records.map(r => this.toDomain(r));
   }
 
   async create(quiz: Quiz): Promise<void> {
