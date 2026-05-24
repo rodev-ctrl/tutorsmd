@@ -14,7 +14,7 @@ import { RescheduleLessonByClientUseCase }  from '../../../application/usecases/
 import { MarkNoShowClientUseCase }          from '../../../application/usecases/lesson/no-show/MarkNoShowClientUseCase';
 import { MarkNoShowTutorUseCase }           from '../../../application/usecases/lesson/no-show/MarkNoShowTutorUseCase';
 import { UploadLessonMaterialUseCase }      from '../../../application/usecases/lesson/material/UploadLessonMaterialUseCase';
-import { GetLessonMaterialsUseCase }        from '../../../application/usecases/lesson/material/GetLessonMaterialUseCase';
+import { GetLessonMaterialUseCase }        from '../../../application/usecases/lesson/material/GetLessonMaterialUseCase';
 import { DeleteLessonMaterialUseCase }      from '../../../application/usecases/lesson/material/DeleteLessonMaterialUseCase';
 import { CreateRegularScheduleUseCase }     from '../../../application/usecases/lesson/regular/CreateRegularScheduleUseCase';
 import { CancelRegularScheduleUseCase }     from '../../../application/usecases/lesson/regular/CancelRegularScheduleUseCase';
@@ -48,7 +48,7 @@ export class LessonController implements ILessonController {
     private readonly markNoShowClientUseCase:      MarkNoShowClientUseCase,
     private readonly markNoShowTutorUseCase:       MarkNoShowTutorUseCase,
     private readonly uploadMaterialUseCase:        UploadLessonMaterialUseCase,
-    private readonly getMaterialUseCase:           GetLessonMaterialsUseCase,
+    private readonly getMaterialUseCase:           GetLessonMaterialUseCase,
     private readonly deleteMaterialUseCase:        DeleteLessonMaterialUseCase,
     private readonly createRegularScheduleUseCase: CreateRegularScheduleUseCase,
     private readonly cancelRegularScheduleUseCase: CancelRegularScheduleUseCase,

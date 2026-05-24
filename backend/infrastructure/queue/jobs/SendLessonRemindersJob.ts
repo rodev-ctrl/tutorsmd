@@ -28,17 +28,27 @@ export class SendLessonRemindersJob {
       const windowEnd    = new Date(targetTime.getTime() + WINDOW_MS);
 
       const lessons = await this.prisma.lesson.findMany({
-        where: {
-          status: 'confirmed',
-          scheduledAt: { gte: windowStart, lte: windowEnd },
+  where: {
+    status: 'confirmed',
+    scheduledAt: { gte: windowStart, lte: windowEnd },
+  },
+  include: {
+    client: {
+      include: {
+        user: {
+          select: { email: true, name: true, languageCode: true },
         },
-        select: {
-          id: true,
-          scheduledAt: true,
-          client: { select: { user: { select: { email: true, name: true, languageCode: true } } } },
-          tutor:  { select: { user: { select: { email: true, nameDe: true, languageCode: true } } } },
+      },
+    },
+    tutor: {
+      include: {
+        user: {
+          select: { email: true, name: true, languageCode: true },
         },
-      });
+      },
+    },
+  },
+});
 
       for (const lesson of lessons) {
         try {

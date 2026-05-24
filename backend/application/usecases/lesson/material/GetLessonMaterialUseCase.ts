@@ -17,20 +17,20 @@ export interface LessonMaterialDto {
   createdAt:        Date;
 }
 
-export interface GetLessonMaterialsDto {
+export interface GetLessonMaterialDto {
   lessonId:     string;
   requesterId:  string;
   requesterRole: 'client' | 'tutor';
 }
 
-export class GetLessonMaterialsUseCase {
+export class GetLessonMaterialUseCase {
   constructor(
     private readonly lessonRepo:   ILessonRepository,
     private readonly materialRepo: ILessonMaterialRepository,
     private readonly fileStorage:  IFileStorageFactory,
   ) {}
 
-  async execute(dto: GetLessonMaterialsDto): Promise<LessonMaterialDto[]> {
+  async execute(dto: GetLessonMaterialDto): Promise<LessonMaterialDto[]> {
     const lessonId = new LessonId(dto.lessonId);
 
     // 1. Найти урок
@@ -65,7 +65,7 @@ export class GetLessonMaterialsUseCase {
         3600,      // 1 час
       );
     } catch (err) {
-      console.error(`[GetLessonMaterials] presign failed for key=${m.fileUrl}:`, err);
+      console.error(`[GetLessonMaterial] presign failed for key=${m.fileUrl}:`, err);
     }
 
     return {
