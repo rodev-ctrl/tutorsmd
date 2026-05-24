@@ -1,3 +1,4 @@
+/*
 import Router from 'express';
 const GastRouter = Router();
 
@@ -9,3 +10,4 @@ GastRouter.get('/setGastCookie', GastController.setGastCookie);
 
 
 export default GastRouter;
+*/

@@ -1,8 +1,9 @@
+/*
 import Router from 'express';
 const UserRouter = Router();
 
 import { UserController } from '../controllers/userController';
-import { requireAuth } from '../middlewares/requireAuth';
+import { requireAuth } from '../middlewares/auth/requireAuth';
 
 
 UserRouter.post('/messagesFromUser', UserController.receiveMessagesFromUser);
@@ -36,3 +37,4 @@ UserRouter.post('/sendComplaint', requireAuth, UserController.sendComplaint);
 
 
 export default UserRouter;
+*/
