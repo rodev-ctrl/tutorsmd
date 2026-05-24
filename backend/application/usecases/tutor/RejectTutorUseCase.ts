@@ -27,7 +27,7 @@ export class RejectTutorUseCase {
     // 3. Уведомить тьютора — вне транзакции
     const user = await this.userRepo.findById(tutor.userId);
     if (user) {
-      await this.emailService.sendTutorRejected(user.email, user.languageCode, dto.reason);
+      await this.emailService.sendTutorRejected(user.email, user.languageCode);
     }
   }
 }
