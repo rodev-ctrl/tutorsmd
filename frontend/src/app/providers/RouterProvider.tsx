@@ -10,6 +10,8 @@ const PrivacyPage       = lazy(() => import('@pages/privacy/PrivacyPage'));
 const FaqPage           = lazy(() => import('@pages/faq/FaqPage'));
 const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage  = lazy(() => import('@pages/auth/ResetPasswordPage'));
+const ActivatePage            = lazy(() => import('@pages/auth/ActivatePage'));
+const ResendVerificationPage  = lazy(() => import('@pages/auth/ResendVerificationPage'));
 
 // ─── Protected pages ──────────────────────────────────────────
 const DashboardPage     = lazy(() => import('@pages/dashboard/DashboardPage'));
@@ -30,6 +32,8 @@ const router = createBrowserRouter([
   { path: '/faq',                 element: <FaqPage /> },
   { path: '/forgot-password',     element: <ForgotPasswordPage /> },
   { path: '/reset-password/:token', element: <ResetPasswordPage /> },
+  { path: '/activate/:token',       element: <ActivatePage /> },
+  { path: '/resend-verification',   element: <ResendVerificationPage /> },
 
   // ─── Любой залогиненный ───────────────────────────────────
   {
@@ -42,6 +46,7 @@ const router = createBrowserRouter([
       { path: '/liked-tutors',                 element: <LikedTutorsPage /> },
     ],
   },
+
 
   // ─── Только admin ─────────────────────────────────────────
   {

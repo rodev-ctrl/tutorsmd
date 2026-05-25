@@ -150,6 +150,18 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    // POST /auth/resend-verification
+    resendVerification: build.mutation<void, string>({
+        query: (email) => ({
+            url: '/auth/resend-verification',
+            method: 'POST',
+            body: { email },
+        }),
+    }),
+
+// Добавить в экспорты:
+// useResendVerificationMutation,
+
     // GET /auth/sessions
     getSessions: build.query<{ sessions: Session[] }, void>({
       query: () => '/auth/sessions',
