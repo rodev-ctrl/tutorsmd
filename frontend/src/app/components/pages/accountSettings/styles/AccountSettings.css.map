@@ -1,7 +1,0 @@
-{
-"version": 3,
-"mappings": "AACI,iDAAgB;EACZ,WAAW,EAAE,EAAE;EACf,YAAY,EAAE,EAAE;EAChB,UAAU,EAAE,sEAAsE;EAClF,aAAa,EAAE,IAAI",
-"sources": ["AccountSettings.scss"],
-"names": [],
-"file": "AccountSettings.css"
-}
