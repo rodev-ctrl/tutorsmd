@@ -1,5 +1,5 @@
 import { useGetUserProfileQuery } from '@shared/api/profileApi';
-import { useGetTutorProfileQuery } from '@shared/api/tutorApi';
+import { useGetTutorProfileQuery } from '@shared/api/tutor/tutorApi';
 import { useGetUserLessonsQuery }  from '@shared/api/lessonApi';
 import { LessonCard } from '../../widgets/lesson-card/ui/LessonCard';
 import { Spinner }    from '../../shared/ui/Spinner/Spinner';

@@ -1,136 +1,104 @@
+
 import { Request, Response } from 'express';
-
-import { ITutorController } from './ITutorController';
-
-import { GetTutorProfileUseCase } from '../../../application/usecases/tutor/GetTutorProfileUseCase';
+import { ITutorController }          from './ITutorController';
+import { GetTutorPublicProfileUseCase }    from '../../../application/usecases/tutor/public/GetTutorPublicProfileUseCase';
 import { UpdateTutorProfileUseCase } from '../../../application/usecases/tutor/UpdateTutorProfileUseCase';
-import { GetPendingTutorsUseCase } from '../../../application/usecases/tutor/GetPendingTutorUseCase';
-import { ApproveTutorUseCase } from '../../../application/usecases/tutor/ApproveTutorUseCase';
-import { RejectTutorUseCase } from '../../../application/usecases/tutor/RejectTutorUseCase';
+import { GetPendingTutorsUseCase }   from '../../../application/usecases/tutor/GetPendingTutorUseCase';
+import { ApproveTutorUseCase }       from '../../../application/usecases/tutor/ApproveTutorUseCase';
+import { RejectTutorUseCase }        from '../../../application/usecases/tutor/RejectTutorUseCase';
+import { GetTutorByUserIdUseCase } from '../../../application/usecases/tutor/GetTutorByUserIdUseCase';
+
 
 import {
   UpdateTutorProfileDto,
   RejectTutorDto,
-  
+  TutorIdParams,
 } from './tutor.schema';
-
-type TutorIdParams = {
-  tutorId: string;
-};
 
 export class TutorController implements ITutorController {
   constructor(
-    private readonly getProfileUseCase: GetTutorProfileUseCase,
+    private readonly getTutorByUserIdUseCase: GetTutorByUserIdUseCase,
+    private readonly getProfileUseCase: GetTutorPublicProfileUseCase,
     private readonly updateProfileUseCase: UpdateTutorProfileUseCase,
     private readonly getPendingTutorsUseCase: GetPendingTutorsUseCase,
     private readonly approveTutorUseCase: ApproveTutorUseCase,
     private readonly rejectTutorUseCase: RejectTutorUseCase,
   ) {}
 
-  // GET /tutors/:tutorId
-  async getProfile(
-    req: Request<TutorIdParams>,
-    res: Response,
-  ): Promise<void> {
-    const { tutorId } = req.params;
+  // GET /tutor/profile - тьютор смотрит СВОЙ профиль
+  async getProfile(req: Request, res: Response): Promise<void> {
+    const userId = req.user!.userId;
 
-    const profile = await this.getProfileUseCase.execute(
-      tutorId,
-    );
+    const tutorId = await this.getTutorByUserIdUseCase.execute(userId);
+    if (!tutorId) {
+      res.status(404).json({ message: 'Tutor profile not found' });
+      return;
+    }
 
-    res.status(200).json({
-      profile,
-    });
+    const profile = await this.getProfileUseCase.execute(tutorId);
+    res.status(200).json({ profile });
   }
 
-  // PATCH /tutors/me
+  // PUT /tutor/profile - тьютор обновляет СВОЙ профиль
   async updateProfile(
     req: Request<{}, {}, UpdateTutorProfileDto>,
     res: Response,
   ): Promise<void> {
-    const tutorId = req.user!.profileId;
+    
+    // userId из JWT
+    const userId = req.user!.userId;
+    
+    const tutorId = await this.getTutorByUserIdUseCase.execute(userId);
+    if (!tutorId) {
+      res.status(404).json({ message: 'Tutor profile not found' });
+      return;
+    }
 
     const {
-      nameDe,
-      nameRu,
-      surnameDe,
-      surnameRu,
-      highlightDe,
-      highlightRu,
-      fulldescribeDe,
-      fulldescribeRu,
+      nameDe, nameRu, surnameDe, surnameRu,
+      highlightDe, highlightRu,
+      fulldescribeDe, fulldescribeRu,
       hourlyRate,
     } = req.body;
 
     await this.updateProfileUseCase.execute({
       tutorId,
-      nameDe,
-      nameRu,
-      surnameDe,
-      surnameRu,
-      highlightDe,
-      highlightRu,
-      fulldescribeDe,
-      fulldescribeRu,
+      nameDe, nameRu, surnameDe, surnameRu,
+      highlightDe, highlightRu,
+      fulldescribeDe, fulldescribeRu,
       hourlyRate,
     });
 
-    res.status(200).json({
-      message: 'Profile updated.',
-    });
+    res.status(200).json({ message: 'Profile updated.' });
   }
 
-  // GET /admin/tutors/pending
-  async getPendingTutors(
-    req: Request,
-    res: Response,
-  ): Promise<void> {
-    const tutors =
-      await this.getPendingTutorsUseCase.execute();
-
-    res.status(200).json({
-      tutors,
-    });
+  // GET /tutor/pending - только admin
+  async getPendingTutors(req: Request, res: Response): Promise<void> {
+    const tutors = await this.getPendingTutorsUseCase.execute();
+    res.status(200).json({ tutors });
   }
 
-  // POST /admin/tutors/:tutorId/approve
+  // POST /tutor/:tutorId/approve - только admin
   async approve(
     req: Request<TutorIdParams>,
     res: Response,
   ): Promise<void> {
     const adminUserId = req.user!.userId;
-
     const { tutorId } = req.params;
 
-    await this.approveTutorUseCase.execute({
-      tutorId,
-      adminUserId,
-    });
-
-    res.status(200).json({
-      message: 'Tutor approved.',
-    });
+    await this.approveTutorUseCase.execute({ tutorId, adminUserId });
+    res.status(200).json({ message: 'Tutor approved.' });
   }
 
-  // POST /admin/tutors/:tutorId/reject
+  // POST /tutor/:tutorId/reject - только admin
   async reject(
-    req: Request<
-      TutorIdParams,
-      {},
-      RejectTutorDto
-    >,
+    req: Request<TutorIdParams, {}, RejectTutorDto>,
     res: Response,
   ): Promise<void> {
     const { tutorId } = req.params;
-    const { reason } = req.body;
+    const { reason }  = req.body;
 
-    await this.rejectTutorUseCase.execute({
-      tutorId,
-      reason,
-    });
-
-    res.status(200).json({
-      message: 'Tutor rejected.',
-    });
+    await this.rejectTutorUseCase.execute({ tutorId, reason });
+    res.status(200).json({ message: 'Tutor rejected.' });
   }
 }

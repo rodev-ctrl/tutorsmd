@@ -35,6 +35,11 @@ export const createTutorRouter = (controller: ITutorController): Router => {
   );
 */
 
+router.get(
+    '/tutors',
+    (req, res) => controller.approve(req, res),
+  );
+
   // POST /tutor/:tutorId/approve — только admin
   router.post(
     '/:tutorId/approve',

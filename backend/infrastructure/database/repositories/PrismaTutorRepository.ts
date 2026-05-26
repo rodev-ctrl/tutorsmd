@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from '../../../generated/prisma';
 import { ITutorRepository, PendingTutorResult } from '../../../domain/repositories/ITutorRepository';
+import type { TutorPublicListFilters, TutorPublicListItem } from '../../../domain/repositories/ITutorRepository';
 import { Tutor, ApprovalStatus } from '../../../domain/entities/Tutor';
 
 
@@ -44,6 +45,63 @@ export class PrismaTutorRepository implements ITutorRepository {
       createdAt: r.createdAt,
     }));
   }
+
+async findPublicList(
+  filters: TutorPublicListFilters,
+): Promise<{ tutors: TutorPublicListItem[]; total: number }> {
+  const { search, minRate, maxRate, page, limit } = filters;
+  const skip = (page - 1) * limit;
+
+  const where: Prisma.TutorWhereInput = {
+    approvalStatus: 'approved',
+    ...(minRate !== undefined && { hourlyRate: { gte: minRate } }),
+    ...(maxRate !== undefined && { hourlyRate: { lte: maxRate } }),
+    ...(search && {
+      OR: [
+        { user: { name:      { contains: search, mode: 'insensitive' } } },
+        { user: { surname:   { contains: search, mode: 'insensitive' } } },
+        { nameDe:    { contains: search, mode: 'insensitive' } },
+        { nameRu:    { contains: search, mode: 'insensitive' } },
+        { highlightDe: { contains: search, mode: 'insensitive' } },
+        { highlightRu: { contains: search, mode: 'insensitive' } },
+      ],
+    }),
+  };
+
+  const [records, total] = await Promise.all([
+    this.prisma.tutor.findMany({
+      where,
+      include: {
+        user: { select: { name: true, surname: true, avatarUrl: true } },
+      },
+      orderBy: [{ ratingAvg: 'desc' }, { createdAt: 'desc' }],
+      skip,
+      take: limit,
+    }),
+    this.prisma.tutor.count({ where }),
+  ]);
+
+  return {
+    tutors: records.map((r) => ({
+      id:             r.id,
+      userId:         r.userId,
+      name:           r.user.name,
+      surname:        r.user.surname,
+      nameDe:         r.nameDe,
+      nameRu:         r.nameRu,
+      surnameDe:      r.surnameDe,
+      surnameRu:      r.surnameRu,
+      avatarUrl:      r.user.avatarUrl ?? null,
+      hourlyRate:     r.hourlyRate !== null ? Number(r.hourlyRate) : null,
+      ratingAvg:      Number(r.ratingAvg),
+      ratingCount:    r.ratingCount,
+      highlightDe:    r.highlightDe,
+      highlightRu:    r.highlightRu,
+      approvalStatus: r.approvalStatus,
+    })),
+    total,
+  };
+}
 
   async create(tutor: Tutor): Promise<void> {
     await this.prisma.tutor.create({
