@@ -8,8 +8,8 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes
 
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
     volumes:
       - redis-data:/data
     healthcheck:
@@ -21,10 +21,20 @@ services:
       - tutors-network
 
   nginx:
-  image: nginx:stable-alpine
+    image: nginx:stable-alpine
+    container_name: tutors-nginx
+    restart: unless-stopped
 
-  volumes:
-    - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro     # ro = read-only
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro     # ro = read-only
+    depends_on: 
+      - tutors-backend
+      - tutors-frontend
+    networks:
+      - tutors-network
 
 
   postgres:
@@ -33,12 +43,12 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRESS_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: Website
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     volumes:
-      - pg-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data   # ссылаюсь внизу
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -64,12 +74,12 @@ services:
 
     environment:
       NODE_ENV: production
-      DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/Website?connection_limit=10&pool_timeout=30"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=30"
       REDIS_HOST: redis
       REDIS_PORT: 6379
       UV_THREADPOOL_SIZE: 8
-    ports:
-      - "7898:7898"
+    expose:
+      - "7898"
     networks:
       - tutors-network
 
@@ -79,29 +89,33 @@ services:
     restart: always
     ports:
       - "3000:80"
+    networks:
+      - tutors-network
 
-  chat-backend:
-    build: ./chatForUsers/backend
-    container_name: chat-backend
-    restart: always
-    depends_on:
-      - postgres
-    environment:
-      DATABASE_URL: "postgresql://postgres:12345@postgres:5432/Website?connection_limit=10&pool_timeout=30"
 
-    ports:
-      - "9000:9000"
+  #chat-backend:
+   # build: ./chatForUsers/backend
+    #container_name: chat-backend
+    #restart: always
+    #depends_on:
+     # - postgres
+    #environment:
+     # DATABASE_URL: "postgresql://postgres:12345@postgres:5432/Website?connection_limit=10&pool_timeout=30"
 
-  chat-frontend:
-    build: ./chatForUsers/frontend
-    container_name: chat-frontend
-    restart: always
-    ports:
-      - "5173:80"
+    #ports:
+     # - "9000:9000"
+
+  #chat-frontend:
+   # build: ./chatForUsers/frontend
+    #container_name: chat-frontend
+    #restart: always
+    #ports:
+     # - "5173:80"
 
 volumes:
   postgres-data:
   redis-data:
+
 networks: 
-  tutors-networks:
+  tutors-network:
     driver: bridge

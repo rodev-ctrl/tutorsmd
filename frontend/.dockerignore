@@ -1,7 +1,6 @@
-
 node_modules
-dist
 build
+dist
 coverage
 
 .git
@@ -14,20 +13,18 @@ coverage
 .env.*
 
 npm-debug.log
+yarn-error.log
 
 logs
 *.log
 
-uploads
 tmp
 temp
 
 Dockerfile
 docker-compose.yml
 
-# SQL dumps / backups
-*.sql
-
 # OS
 .DS_Store
 Thumbs.db
+

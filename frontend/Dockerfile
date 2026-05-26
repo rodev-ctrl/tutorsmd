@@ -1,17 +1,31 @@
-# Build stage
-FROM node:18 as build
+# =========================
+# BUILD STAGE
+# =========================
+
+FROM node:18-alpine AS build
+
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+
+RUN npm ci
+
 COPY . .
+
 RUN npm run build
 
-# Production: NGINX
-FROM nginx:1.25
+
+
+# =========================
+# PRODUCTION STAGE
+# =========================
+
+FROM nginx:1.25-alpine
+
+# frontend build
 COPY --from=build /app/build /usr/share/nginx/html
 
-# копируем Nginx конфиг если нужно
+# nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
