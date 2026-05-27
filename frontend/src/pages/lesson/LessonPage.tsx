@@ -1,90 +1,93 @@
+import { useParams, Navigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { selectActiveRole } from '@entities/user/model/selectors';
-import { useGetUserLessonsQuery } from '@shared/api/lessonApi';
-import { Layout }     from '@widgets/layout/ui/Layout';
-import { LessonCard } from '@widgets/lesson-card/ui/LessonCard';
-import { Spinner }    from '@shared/index';
-import type { LessonStatus } from '@entities/lesson/model/types';
-import { Role } from '@entities/user/model/types';
+import { useGetLessonQuery } from '@shared/api/lessonApi';
+import { Spinner } from '@shared/index';
+import { VideoRoom }      from './components/VideoRoom';
+import { LessonChat }     from './components/LessonChat';
+import { Whiteboard }     from './components/Whiteboard';
+import { LessonControls } from './components/LessonControls';
 
-const STATUS_TABS: { label: string; statuses: LessonStatus[] | undefined }[] = [
-  { label: 'Alle',           statuses: undefined },
-  { label: 'Anfragen',       statuses: ['pending'] },
-  { label: 'Bestätigt',      statuses: ['confirmed'] },
-  { label: 'Abgeschlossen',  statuses: ['completed'] },
-  { label: 'Storniert',      statuses: ['cancelled_by_client', 'cancelled_by_tutor'] },
-];
+export default function LessonPage() {
+  const { lessonId } = useParams<{ lessonId: string }>();
+  const { data: lesson, isLoading } = useGetLessonQuery(lessonId ?? '', { skip: !lessonId });
 
-export default function LessonsPage() {
-  const role = useSelector(selectActiveRole);
-  const [activeTab, setActiveTab] = useState(0);
+  // WebRTC state — только локальный, не нужен глобально
+  const [localStream, setLocalStream]   = useState<MediaStream | null>(null);
+  const [peers, setPeers]               = useState<Map<string, RTCPeerConnection>>(new Map());
+  const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map());
+  const [activeTab, setActiveTab]       = useState<'chat' | 'whiteboard'>('chat');
 
-  const tab = STATUS_TABS[activeTab];
+  if (!lessonId)    return <Navigate to="/dashboard" replace />;
+  if (isLoading)    return <Spinner fullscreen />;
+  if (!lesson)      return <Navigate to="/dashboard" replace />;
 
-  // RTK Query — передаём первый статус если задан (бэкенд фильтрует)
-  const { data, isLoading } = useGetUserLessonsQuery(
-    tab.statuses ? { status: tab.statuses[0] } : {},
-  );
-
-  // Клиентская фильтрация для множественных статусов
-  const lessons = data?.lessons.filter((l) =>
-    tab.statuses ? tab.statuses.includes(l.status) : true,
-  ) ?? [];
+  const canJoin = lesson.status === 'confirmed' || lesson.status === 'in_progress';
 
   return (
-    <Layout>
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="h-screen flex flex-col bg-gray-900 text-white overflow-hidden">
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Meine Unterrichtsstunden
-        </h1>
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+        <div className="flex items-center gap-3">
+          <div className={`w-2 h-2 rounded-full ${
+            lesson.status === 'in_progress' ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'
+          }`} />
+          <span className="text-sm font-medium">
+            {lesson.status === 'in_progress' ? 'Unterricht läuft' : 'Warteraum'}
+          </span>
+        </div>
+        <span className="text-xs text-gray-400">
+          {new Date(lesson.scheduledAt).toLocaleString('de-DE')}
+          {' · '}{lesson.durationMinutes} Min.
+        </span>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
-          {STATUS_TABS.map((tab, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveTab(i)}
-              className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition border-b-2 -mb-px
-                ${activeTab === i
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      {/* Main */}
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* Video area */}
+        <div className="flex-1 flex flex-col">
+          <VideoRoom
+            lessonId={lessonId}
+            localStream={localStream}
+            setLocalStream={setLocalStream}
+            remoteStreams={remoteStreams}
+            setRemoteStreams={setRemoteStreams}
+            canJoin={canJoin}
+          />
+          <LessonControls
+            lessonId={lessonId}
+            lesson={lesson}
+            localStream={localStream}
+          />
         </div>
 
-        {/* Content */}
-        {isLoading ? (
-          <Spinner />
-        ) : lessons.length === 0 ? (
-          <EmptyState role={role} />
-        ) : (
-          <div className="space-y-3">
-            {lessons.map((lesson) => (
-              <LessonCard
-                key={lesson.id}
-                lesson={lesson}
-                role={role as Role ?? 'client'}
-              />
+        {/* Sidebar — chat / whiteboard */}
+        <aside className="w-80 flex flex-col border-l border-gray-700 bg-gray-800">
+          {/* Tab switcher */}
+          <div className="flex border-b border-gray-700">
+            {(['chat', 'whiteboard'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-2 text-sm font-medium transition
+                  ${activeTab === tab
+                    ? 'text-white border-b-2 border-blue-400'
+                    : 'text-gray-400 hover:text-gray-200'}`}
+              >
+                {tab === 'chat' ? '💬 Chat' : '🖊 Whiteboard'}
+              </button>
             ))}
           </div>
-        )}
 
+          <div className="flex-1 overflow-hidden">
+            {activeTab === 'chat'
+              ? <LessonChat lessonId={lessonId} />
+              : <Whiteboard lessonId={lessonId} />
+            }
+          </div>
+        </aside>
       </div>
-    </Layout>
+    </div>
   );
 }
-
-const EmptyState = ({ role }: { role: string | null }) => (
-  <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center">
-    <p className="text-4xl mb-3">📅</p>
-    <p className="text-gray-500 text-sm">
-      {role === 'tutor'
-        ? 'Keine Unterrichtsstunden gefunden.'
-        : 'Sie haben noch keine Unterrichtsstunden.'}
-    </p>
-  </div>
-);
