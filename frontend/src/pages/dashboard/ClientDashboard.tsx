@@ -1,6 +1,6 @@
 import { useGetUserProfileQuery } from '@shared/api/profileApi';
 import { useGetUserLessonsQuery } from '@shared/api/lessonApi';
-import { LessonCard }    from '@widgets/lesson-card/ui/LessonCard';
+import { LessonCard }    from '@widgets/lesson-card/index';
 import { ProgressChart } from '@widgets/dashboard/ui/ProgressChart';
 import { Spinner }       from '@shared/index';
 import { Link }          from 'react-router-dom';
