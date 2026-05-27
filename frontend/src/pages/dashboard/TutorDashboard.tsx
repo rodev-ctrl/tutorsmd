@@ -1,8 +1,8 @@
 import { useGetUserProfileQuery } from '@shared/api/profileApi';
 import { useGetTutorProfileQuery } from '@shared/api/tutor/tutorApi';
 import { useGetUserLessonsQuery }  from '@shared/api/lessonApi';
-import { LessonCard } from '../../widgets/lesson-card/ui/LessonCard';
-import { Spinner }    from '../../shared/ui/Spinner/Spinner';
+import { LessonCard } from '@widgets/lesson-card/index';
+import { Spinner }    from '@shared/index';
 import { Link }       from 'react-router-dom';
 
 export const TutorDashboard = () => {
