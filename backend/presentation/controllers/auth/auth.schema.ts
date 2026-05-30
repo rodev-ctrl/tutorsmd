@@ -33,7 +33,7 @@ export const SwitchRoleSchema = z.object({
 
 // ─── Refresh Token ────────────────────────────────────────────
 export const RefreshSchema = z.object({
-  activeRole: z.enum(['client', 'tutor', 'admin']),
+  activeRole: z.enum(['client', 'tutor', 'admin']).optional(),
 });
 
 // ─── Password ─────────────────────────────────────────────────

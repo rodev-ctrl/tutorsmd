@@ -23,6 +23,7 @@ import { rateLimit } from "express-rate-limit";
 import { createAuthRouter }         from './presentation/routes/AuthRoutes';
 import { createProfileRouter }      from './presentation/routes/ProfileRoutes';
 import { createTutorRouter }        from './presentation/routes/tutor/TutorRoutes';
+import { createTutorPublicRouter }  from './presentation/routes/tutor/TutorPublicRoutes';
 import { createLessonRouter }       from './presentation/routes/LessonRoutes';
 import { createAvailableSlotRouter } from './presentation/routes/AvailableSlotRoutes';
 import { createReviewRouter }       from './presentation/routes/ReviewRoutes';
@@ -34,6 +35,7 @@ import {
   authController,
   profileController,
   tutorController,
+  tutorPublicController,
   lessonController,
   availableSlotController,
   reviewController,
@@ -116,6 +118,7 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" })); // For parsing U
 app.use('/api/auth',    createAuthRouter(authController));
 app.use('/api/profile', createProfileRouter(profileController));
 app.use('/api/tutor',   createTutorRouter(tutorController));
+app.use('/api/tutors',  createTutorPublicRouter(tutorPublicController));
 app.use('/api/lessons', createLessonRouter(lessonController));
 app.use('/api/slots',   createAvailableSlotRouter(availableSlotController));
 app.use('/api/reviews', createReviewRouter(reviewController));
