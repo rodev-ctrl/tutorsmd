@@ -17,5 +17,31 @@
   "join":    "Присоединиться",
   "cancel":  "Отменить",
   "confirm": "Подтвердить",
-  "leave":   "Выйти"
+  "leave":   "Выйти",
+  
+  "videoRoom": {
+    "you": "Вы",
+    "roleTeacher": "(Репетитор)",
+    "roleAdmin": "(Админ)",
+    "roleStudent": "(Ученик)",
+    "online": "онлайн",
+    "waitingForOthers": "Ожидание участников...",
+    "tutorNotJoined": "Репетитор не подключился",
+    "lessonNotStarted": "Урок ещё не начался."
+  },
+  "controls": {
+    "micOff": "Выключить микрофон",
+    "micOn": "Включить микрофон",
+    "camOff": "Выключить камеру",
+    "camOn": "Включить камеру",
+    "confirm": "Подтвердить",
+    "cancel": "Отменить",
+    "leave": "Выйти",
+    "cancelConfirm": "Вы уверены, что хотите отменить урок?"
+  },
+  "chat": {
+    "placeholder": "Сообщение...",
+    "file": "Файл"
+  }
+
 }

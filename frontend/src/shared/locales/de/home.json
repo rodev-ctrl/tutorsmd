@@ -1,0 +1,26 @@
+{
+  "tutorsPreview": {
+    "title": "Unsere Nachhilfelehrer",
+    "viewAll": "Alle Lehrer ansehen",
+    "reviews": "Bewertungen",
+    "perHour": "€/Std."
+  },
+  "subjects": {
+    "title": "Fächer",
+    "cta": "Jetzt Probestunde buchen",
+    "items": [
+      {
+        "name": "Mathematik",
+        "icon": "📐",
+        "levels": ["Klassen 1–13", "Klausuren", "Abitur"],
+        "desc": "Von Grundschulmathematik bis zum Abitur — klare Erklärungen und praktische Übungen."
+      },
+      {
+        "name": "Deutsch",
+        "icon": "📖",
+        "levels": ["A0–B2", "Telc", "DSH", "Goethe"],
+        "desc": "Grammatik, Konversation und Prüfungsvorbereitung — für alle Niveaus."
+      }
+    ]
+  }
+}

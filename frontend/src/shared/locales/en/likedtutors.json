@@ -1,0 +1,9 @@
+{
+  "title":   "Saved tutors",
+  "empty":   "You haven't saved any tutors yet",
+  "findBtn": "Find a tutor",
+  "remove":  "Remove from saved",
+  "add":     "Save tutor",
+  "rate":    "reviews",
+  "perHour": "€ / hr"
+}

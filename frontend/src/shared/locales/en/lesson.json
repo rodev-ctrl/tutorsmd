@@ -17,5 +17,31 @@
   "join":    "Join",
   "cancel":  "Cancel",
   "confirm": "Confirm",
-  "leave":   "Leave"
+  "leave":   "Leave",
+
+  "videoRoom": {
+    "you": "You",
+    "roleTeacher": "(Teacher)",
+    "roleAdmin": "(Admin)",
+    "roleStudent": "(Student)",
+    "online": "online",
+    "waitingForOthers": "Waiting for others...",
+    "tutorNotJoined": "Tutor not connected",
+    "lessonNotStarted": "The lesson has not started yet."
+  },
+  "controls": {
+    "micOff": "Turn off microphone",
+    "micOn": "Turn on microphone",
+    "camOff": "Turn off camera",
+    "camOn": "Turn on camera",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "leave": "Leave",
+    "cancelConfirm": "Are you sure you want to cancel the lesson?"
+  },
+  "chat": {
+    "placeholder": "Message...",
+    "file": "File"
+  }
+
 }

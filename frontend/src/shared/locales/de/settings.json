@@ -1,0 +1,101 @@
+{
+  "title": "Einstellungen",
+  "tabs": {
+    "profile": "Persönliche Daten",
+    "tutorProfile": "Lehrerprofil",
+    "security": "Sicherheit",
+    "sessions": "Sitzungen"
+  },
+  "profile": {
+    "title": "Persönliche Daten",
+    "saved": "Gespeichert ✓",
+    "fields": {
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "username": "Benutzername",
+      "language": "Sprache",
+      "timezone": "Zeitzone",
+      "email": "E-Mail"
+    },
+    "emailVerified": "✓ Verifiziert",
+    "emailNotVerified": "Nicht verifiziert",
+    "save": "Speichern",
+    "saving": "Wird gespeichert..."
+  },
+  "tutorProfile": {
+    "saved": "Gespeichert ✓",
+    "approvalStatus": {
+      "pending": {
+        "title": "Ihr Profil wird geprüft.",
+        "subtitle": "Sie können Ihr Profil bereits ausfüllen — es wird nach der Freischaltung sichtbar."
+      },
+      "rejected": {
+        "title": "Ihr Profil wurde abgelehnt.",
+        "subtitle": "Bitte aktualisieren Sie Ihr Profil und warten Sie auf eine erneute Prüfung."
+      },
+      "approved": "✓ Profil freigeschaltet"
+    },
+    "hourlyRate": {
+      "title": "Stundensatz"
+    },
+    "name": {
+      "title": "Name auf Deutsch / по-русски",
+      "firstNameDe": "Vorname (DE)",
+      "firstNameRu": "Vorname (RU)",
+      "lastNameDe": "Nachname (DE)",
+      "lastNameRu": "Nachname (RU)"
+    },
+    "highlight": {
+      "title": "Kurzvorstellung",
+      "maxChars": "max. 500 Zeichen",
+      "de": "Auf Deutsch",
+      "ru": "По-русски",
+      "placeholderDe": "z.B. Ich unterrichte Mathematik seit 5 Jahren...",
+      "placeholderRu": "например: Преподаю математику уже 5 лет..."
+    },
+    "fullDescription": {
+      "title": "Ausführliche Beschreibung",
+      "maxChars": "max. 5000 Zeichen",
+      "de": "Auf Deutsch",
+      "ru": "По-русски",
+      "placeholderDe": "Beschreiben Sie Ihre Erfahrung, Methodik, Erfolge...",
+      "placeholderRu": "Опишите свой опыт, методику, достижения..."
+    },
+    "save": "Speichern",
+    "saving": "Wird gespeichert..."
+  },
+  "changePassword": {
+    "title": "Passwort ändern",
+    "oldPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort (mind. 15 Zeichen)",
+    "confirmPassword": "Passwort bestätigen",
+    "submit": "Passwort ändern",
+    "submitting": "Wird geändert..."
+  },
+  "changeEmail": {
+    "title": "E-Mail ändern",
+    "newEmail": "Neue E-Mail",
+    "password": "Aktuelles Passwort (zur Bestätigung)",
+    "submit": "Bestätigungslink senden",
+    "submitting": "Wird gesendet..."
+  },
+  "sessions": {
+    "title": "Aktive Sitzungen",
+    "revokeAll": "Alle abmelden",
+    "empty": "Keine aktiven Sitzungen.",
+    "unknownDevice": "Unbekanntes Gerät",
+    "createdAt": "Erstellt",
+    "expiresAt": "Läuft ab",
+    "revoke": "Abmelden"
+  },
+  "media": {
+    "title": "Kamera & Mikrofon testen",
+    "error": "Kein Zugriff auf Kamera/Mikrofon. Bitte Berechtigungen prüfen.",
+    "video": "Video",
+    "audio": "Audio",
+    "startRecording": "Aufnahme starten",
+    "stopRecording": "Aufnahme stoppen",
+    "playback": "Wiedergabe:",
+    "hint": "Wenn Sie Kamera oder Mikrofon nicht sehen, prüfen Sie die Browser-Berechtigungen."
+  }
+}

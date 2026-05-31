@@ -1,0 +1,20 @@
+{
+  "title":    "Support-Chat",
+  "subtitle": "Wir antworten in der Regel innerhalb eines Werktages.",
+  "loading":  "Wird geladen...",
+  "loadMore": "Ältere Nachrichten laden",
+  "emptyState": "Noch keine Nachrichten. Schreiben Sie uns — wir helfen gerne.",
+  "senderLabel": {
+    "support": "Support"
+  },
+  "file": {
+    "done":  "Hochgeladen",
+    "error": "Fehler"
+  },
+  "input": {
+    "placeholder":   "Nachricht schreiben... (Enter zum Senden)",
+    "attachTitle":   "Datei anhängen",
+    "send":          "Senden",
+    "sending":       "Wird gesendet..."
+  }
+}

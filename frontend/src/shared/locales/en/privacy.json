@@ -1,0 +1,26 @@
+{
+  "title": "Privacy policy",
+  "footer": "Last updated: May 2025 · tutorsmd.net",
+  "sections": [
+    {
+      "title": "1. Data controller",
+      "content": "TutorsMD is responsible for data processing on this website. If you have any questions about privacy, please contact our support team."
+    },
+    {
+      "title": "2. Data collected",
+      "content": "We collect the following personal data: name, email address, timezone, as well as technical data such as IP address and browser information."
+    },
+    {
+      "title": "3. Purpose of processing",
+      "content": "Your data is used solely to provide our platform services, communicate with you, and improve our services."
+    },
+    {
+      "title": "4. Data sharing",
+      "content": "Your data is not shared with third parties unless required to fulfil a contract or you have given explicit consent."
+    },
+    {
+      "title": "5. Your rights",
+      "content": "You have the right to access, correct, delete and restrict the processing of your personal data. Contact us at any time via the support chat."
+    }
+  ]
+}

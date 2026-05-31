@@ -1,0 +1,20 @@
+{
+  "title":    "Support Chat",
+  "subtitle": "We usually reply within one business day.",
+  "loading":  "Loading...",
+  "loadMore": "Load earlier messages",
+  "emptyState": "No messages yet. Write to us — we're happy to help.",
+  "senderLabel": {
+    "support": "Support"
+  },
+  "file": {
+    "done":  "Uploaded",
+    "error": "Error"
+  },
+  "input": {
+    "placeholder":   "Write a message... (Enter to send)",
+    "attachTitle":   "Attach file",
+    "send":          "Send",
+    "sending":       "Sending..."
+  }
+}

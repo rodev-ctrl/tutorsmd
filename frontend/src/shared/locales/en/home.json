@@ -1,0 +1,26 @@
+{
+  "tutorsPreview": {
+    "title": "Our tutors",
+    "viewAll": "View all tutors",
+    "reviews": "reviews",
+    "perHour": "€/hr"
+  },
+  "subjects": {
+    "title": "Subjects",
+    "cta": "Book a trial lesson",
+    "items": [
+      {
+        "name": "Mathematics",
+        "icon": "📐",
+        "levels": ["Grades 1–13", "Exams", "Abitur"],
+        "desc": "From school math to Abitur — clear explanations and practice."
+      },
+      {
+        "name": "German",
+        "icon": "📖",
+        "levels": ["A0–B2", "Telc", "DSH", "Goethe"],
+        "desc": "Grammar, conversation and exam preparation — for all levels."
+      }
+    ]
+  }
+}

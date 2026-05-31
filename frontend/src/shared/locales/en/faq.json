@@ -1,0 +1,25 @@
+{
+  "title": "Frequently asked questions",
+  "items": [
+    {
+      "question": "How do I book a lesson?",
+      "answer": "Find a tutor, choose an available time slot and confirm the booking. The tutor will receive a notification and confirm the appointment."
+    },
+    {
+      "question": "How does the lesson work?",
+      "answer": "Lessons take place via video call. After booking, you'll receive a link to your lesson. You can test your camera and microphone in advance under Settings → Test camera."
+    },
+    {
+      "question": "How do I pay?",
+      "answer": "Payment is processed through the platform. Supported methods: credit card, PayPal and bank transfer."
+    },
+    {
+      "question": "Can I cancel a lesson?",
+      "answer": "Yes, free of charge up to 24 hours before the lesson. Late cancellations may incur a fee."
+    },
+    {
+      "question": "How do I become a tutor on TutorsMD?",
+      "answer": "Register as a tutor, fill in your profile and wait for approval from our team. This usually takes 1–3 business days."
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "admin": {
+    "title": "Admin Panel",
+    "pendingTutors": {
+      "title": "Tutors pending review",
+      "empty": "No pending applications.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "nameDe": "DE"
+    },
+    "quickActions": {
+      "lessons": "All lessons",
+      "profile": "Edit profile",
+      "camera": "Test camera"
+    },
+    "pendingLessons": {
+      "title": "New requests"
+    },
+    "upcomingLessons": {
+      "title": "Upcoming lessons",
+      "empty": "No lessons scheduled.",
+      "viewAll": "View all"
+    }
+  },
+  "client": {
+    "greeting": "Welcome, {{name}}!",
+    "subtitle": "Here are your upcoming lessons.",
+    "quickActions": {
+      "findTutor": "Find a tutor",
+      "findTutorDesc": "Browse all available teachers",
+      "lessons": "All lessons",
+      "lessonsDesc": "Past and upcoming sessions",
+      "settings": "Settings",
+      "settingsDesc": "Manage profile and account"
+    },
+    "upcomingLessons": {
+      "title": "Upcoming lessons",
+      "empty": "No lessons scheduled.",
+      "findBtn": "Find a tutor",
+      "viewAll": "View all"
+    }
+  },
+  "tutor": {
+    "greeting": "Welcome, {{name}}!",
+    "rating": "Rating",
+    "approvalStatus": {
+      "pending": "Profile under review",
+      "rejected": "Profile rejected"
+    },
+    "banners": {
+      "pending": {
+        "title": "Your profile is being reviewed.",
+        "subtitle": "Once approved, students will be able to book lessons with you."
+      },
+      "rejected": {
+        "title": "Your profile has been rejected.",
+        "subtitle": "Please update your profile or contact support."
+      }
+    },
+    "quickActions": {
+      "lessons": "All lessons",
+      "profile": "Edit profile",
+      "camera": "Test camera"
+    },
+    "activeLessons": {
+      "title": "Active lessons"
+    },
+    "pendingLessons": {
+      "title": "New requests"
+    },
+    "upcomingLessons": {
+      "title": "Scheduled lessons",
+      "empty": "No scheduled lessons.",
+      "viewAll": "View all"
+    }
+  }
+}

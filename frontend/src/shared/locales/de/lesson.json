@@ -17,5 +17,32 @@
   "join":    "Beitreten",
   "cancel":  "Absagen",
   "confirm": "Bestätigen",
-  "leave":   "Verlassen"
+  "leave":   "Verlassen",
+
+  "videoRoom": {
+    "you": "Sie",
+    "roleTeacher": "(Lehrer)",
+    "roleAdmin": "(Admin)",
+    "roleStudent": "(Schüler)",
+    "online": "online",
+    "waitingForOthers": "Warten auf Teilnehmer...",
+    "tutorNotJoined": "Lehrer nicht verbunden",
+    "lessonNotStarted": "Der Unterricht hat noch nicht begonnen."
+  },
+  "controls": {
+    "micOff": "Mikrofon ausschalten",
+    "micOn": "Mikrofon einschalten",
+    "camOff": "Kamera ausschalten",
+    "camOn": "Kamera einschalten",
+    "confirm": "Bestätigen",
+    "cancel": "Absagen",
+    "leave": "Verlassen",
+    "cancelConfirm": "Unterricht wirklich absagen?"
+  },
+  "chat": {
+    "placeholder": "Nachricht...",
+    "file": "Datei"
+  
 }
+}
+

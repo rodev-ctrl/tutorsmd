@@ -1,0 +1,9 @@
+{
+  "title": "Fortschritt",
+  "subtitle": "Stunden / Woche",
+  "empty": "Noch keine abgeschlossenen Unterrichtsstunden.",
+  "tooltip": {
+    "label": "Unterricht",
+    "week": "Woche {{week}}"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "title": "Settings",
+  "tabs": {
+    "profile": "Personal info",
+    "tutorProfile": "Tutor profile",
+    "security": "Security",
+    "sessions": "Sessions"
+  },
+  "profile": {
+    "title": "Personal info",
+    "saved": "Saved ✓",
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "username": "Username",
+      "language": "Language",
+      "timezone": "Timezone",
+      "email": "Email"
+    },
+    "emailVerified": "✓ Verified",
+    "emailNotVerified": "Not verified",
+    "save": "Save",
+    "saving": "Saving..."
+  },
+  "tutorProfile": {
+    "saved": "Saved ✓",
+    "approvalStatus": {
+      "pending": {
+        "title": "Your profile is being reviewed.",
+        "subtitle": "You can fill in your profile now — it will become visible once approved."
+      },
+      "rejected": {
+        "title": "Your profile has been rejected.",
+        "subtitle": "Please update your profile and wait for re-review."
+      },
+      "approved": "✓ Profile approved"
+    },
+    "hourlyRate": {
+      "title": "Hourly rate"
+    },
+    "name": {
+      "title": "Name in German / in Russian",
+      "firstNameDe": "First name (DE)",
+      "firstNameRu": "First name (RU)",
+      "lastNameDe": "Last name (DE)",
+      "lastNameRu": "Last name (RU)"
+    },
+    "highlight": {
+      "title": "Short introduction",
+      "maxChars": "max. 500 characters",
+      "de": "In German",
+      "ru": "In Russian",
+      "placeholderDe": "e.g. I have been teaching maths for 5 years...",
+      "placeholderRu": "например: Преподаю математику уже 5 лет..."
+    },
+    "fullDescription": {
+      "title": "Full description",
+      "maxChars": "max. 5000 characters",
+      "de": "In German",
+      "ru": "In Russian",
+      "placeholderDe": "Describe your experience, methods, achievements...",
+      "placeholderRu": "Опишите свой опыт, методику, достижения..."
+    },
+    "save": "Save",
+    "saving": "Saving..."
+  },
+  "changePassword": {
+    "title": "Change password",
+    "oldPassword": "Current password",
+    "newPassword": "New password (min. 15 characters)",
+    "confirmPassword": "Confirm password",
+    "submit": "Change password",
+    "submitting": "Changing..."
+  },
+  "changeEmail": {
+    "title": "Change email",
+    "newEmail": "New email",
+    "password": "Current password (to confirm)",
+    "submit": "Send confirmation link",
+    "submitting": "Sending..."
+  },
+  "sessions": {
+    "title": "Active sessions",
+    "revokeAll": "Sign out of all devices",
+    "empty": "No active sessions.",
+    "unknownDevice": "Unknown device",
+    "createdAt": "Created",
+    "expiresAt": "Expires",
+    "revoke": "Sign out"
+  },
+  "media": {
+    "title": "Test camera & microphone",
+    "error": "No access to camera/microphone. Please check browser permissions.",
+    "video": "Video",
+    "audio": "Audio",
+    "startRecording": "Start recording",
+    "stopRecording": "Stop recording",
+    "playback": "Playback:",
+    "hint": "If you don't see the camera or microphone, check your browser permissions."
+  }
+}

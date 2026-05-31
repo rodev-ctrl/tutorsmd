@@ -1,0 +1,14 @@
+{
+  "title": "My lessons",
+  "tabs": {
+    "all":       "All",
+    "pending":   "Requests",
+    "confirmed": "Confirmed",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "empty": {
+    "tutor":  "No lessons found.",
+    "client": "You don't have any lessons yet."
+  }
+}

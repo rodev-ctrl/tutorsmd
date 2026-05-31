@@ -1,0 +1,12 @@
+{
+  "notFound":  "Tutor not found.",
+  "reviews":   "reviews",
+  "perHour":   "€/hr",
+  "about":     "About me",
+  "cta": {
+    "title":       "Book a trial lesson",
+    "subtitle":    "First lesson — get to know your tutor.",
+    "loginToBook": "Sign in to book",
+    "onlyClients": "Only students can book lessons."
+  }
+}

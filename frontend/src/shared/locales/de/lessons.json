@@ -1,0 +1,14 @@
+{
+  "title": "Meine Unterrichtsstunden",
+  "tabs": {
+    "all":       "Alle",
+    "pending":   "Anfragen",
+    "confirmed": "Bestätigt",
+    "completed": "Abgeschlossen",
+    "cancelled": "Storniert"
+  },
+  "empty": {
+    "tutor":  "Keine Unterrichtsstunden gefunden.",
+    "client": "Sie haben noch keine Unterrichtsstunden."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "notFound":  "Nicht gefunden.",
+  "reviews":   "Bewertungen",
+  "perHour":   "€/Std.",
+  "about":     "Über mich",
+  "cta": {
+    "title":       "Probestunde buchen",
+    "subtitle":    "Erste Stunde — lernen Sie den Lehrer kennen.",
+    "loginToBook": "Anmelden zum Buchen",
+    "onlyClients": "Nur Schüler können Unterricht buchen."
+  }
+}

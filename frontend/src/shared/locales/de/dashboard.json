@@ -1,0 +1,77 @@
+{
+  "admin": {
+    "title": "Admin-Bereich",
+    "pendingTutors": {
+      "title": "Nachhilfelehrer zur Prüfung",
+      "empty": "Keine ausstehenden Anträge.",
+      "approve": "Freischalten",
+      "reject": "Ablehnen",
+      "nameDe": "DE"
+    },
+    "quickActions": {
+      "lessons": "Alle Unterrichte",
+      "profile": "Profil bearbeiten",
+      "camera": "Kamera testen"
+    },
+    "pendingLessons": {
+      "title": "Neue Anfragen"
+    },
+    "upcomingLessons": {
+      "title": "Nächste Unterrichtsstunden",
+      "empty": "Keine Unterrichtsstunden geplant.",
+      "viewAll": "Alle ansehen"
+    }
+  },
+  "client": {
+    "greeting": "Willkommen, {{name}}!",
+    "subtitle": "Hier sind Ihre nächsten Unterrichtsstunden.",
+    "quickActions": {
+      "findTutor": "Nachhilfelehrer finden",
+      "findTutorDesc": "Alle verfügbaren Lehrer ansehen",
+      "lessons": "Alle Unterrichte",
+      "lessonsDesc": "Vergangene und geplante Stunden",
+      "settings": "Einstellungen",
+      "settingsDesc": "Profil und Konto verwalten"
+    },
+    "upcomingLessons": {
+      "title": "Nächste Unterrichtsstunden",
+      "empty": "Keine Unterrichtsstunden geplant.",
+      "findBtn": "Nachhilfelehrer suchen",
+      "viewAll": "Alle ansehen"
+    }
+  },
+  "tutor": {
+    "greeting": "Willkommen, {{name}}!",
+    "rating": "Bewertung",
+    "approvalStatus": {
+      "pending": "Profil wird geprüft",
+      "rejected": "Profil abgelehnt"
+    },
+    "banners": {
+      "pending": {
+        "title": "Ihr Profil wird überprüft.",
+        "subtitle": "Nach der Freischaltung können Schüler Unterricht buchen."
+      },
+      "rejected": {
+        "title": "Ihr Profil wurde abgelehnt.",
+        "subtitle": "Bitte aktualisieren Sie Ihr Profil oder kontaktieren Sie den Support."
+      }
+    },
+    "quickActions": {
+      "lessons": "Alle Unterrichte",
+      "profile": "Profil bearbeiten",
+      "camera": "Kamera testen"
+    },
+    "activeLessons": {
+      "title": "Laufende Unterrichtsstunden"
+    },
+    "pendingLessons": {
+      "title": "Neue Anfragen"
+    },
+    "upcomingLessons": {
+      "title": "Geplante Unterrichtsstunden",
+      "empty": "Keine geplanten Unterrichtsstunden.",
+      "viewAll": "Alle ansehen"
+    }
+  }
+}

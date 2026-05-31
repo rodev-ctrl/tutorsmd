@@ -1,0 +1,9 @@
+{
+  "title": "Progress",
+  "subtitle": "hours / week",
+  "empty": "No completed lessons yet.",
+  "tooltip": {
+    "label": "Lesson",
+    "week": "Week {{week}}"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "title": "Datenschutzerklärung",
+  "footer": "Stand: Mai 2025 · tutorsmd.net",
+  "sections": [
+    {
+      "title": "1. Verantwortlicher",
+      "content": "Verantwortlich für die Datenverarbeitung auf dieser Website ist TutorsMD. Bei Fragen zum Datenschutz wenden Sie sich bitte an unseren Support."
+    },
+    {
+      "title": "2. Erhobene Daten",
+      "content": "Wir erheben folgende personenbezogene Daten: Name, E-Mail-Adresse, Zeitzone sowie technische Daten wie IP-Adresse und Browser-Informationen."
+    },
+    {
+      "title": "3. Zweck der Datenverarbeitung",
+      "content": "Ihre Daten werden ausschließlich zur Bereitstellung unserer Plattform, zur Kommunikation mit Ihnen und zur Verbesserung unserer Dienste verarbeitet."
+    },
+    {
+      "title": "4. Datenweitergabe",
+      "content": "Ihre Daten werden nicht an Dritte weitergegeben, es sei denn, dies ist zur Vertragserfüllung erforderlich oder Sie haben ausdrücklich zugestimmt."
+    },
+    {
+      "title": "5. Ihre Rechte",
+      "content": "Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer personenbezogenen Daten. Kontaktieren Sie uns jederzeit über den Support-Chat."
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "title": "Настройки",
+  "tabs": {
+    "profile": "Личные данные",
+    "tutorProfile": "Профиль репетитора",
+    "security": "Безопасность",
+    "sessions": "Сессии"
+  },
+  "profile": {
+    "title": "Личные данные",
+    "saved": "Сохранено ✓",
+    "fields": {
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "username": "Имя пользователя",
+      "language": "Язык",
+      "timezone": "Часовой пояс",
+      "email": "E-Mail"
+    },
+    "emailVerified": "✓ Подтверждён",
+    "emailNotVerified": "Не подтверждён",
+    "save": "Сохранить",
+    "saving": "Сохранение..."
+  },
+  "tutorProfile": {
+    "saved": "Сохранено ✓",
+    "approvalStatus": {
+      "pending": {
+        "title": "Ваш профиль проверяется.",
+        "subtitle": "Вы уже можете заполнить профиль — он станет виден после одобрения."
+      },
+      "rejected": {
+        "title": "Ваш профиль был отклонён.",
+        "subtitle": "Пожалуйста, обновите профиль и дождитесь повторной проверки."
+      },
+      "approved": "✓ Профиль одобрен"
+    },
+    "hourlyRate": {
+      "title": "Стоимость в час"
+    },
+    "name": {
+      "title": "Имя на немецком / по-русски",
+      "firstNameDe": "Имя (DE)",
+      "firstNameRu": "Имя (RU)",
+      "lastNameDe": "Фамилия (DE)",
+      "lastNameRu": "Фамилия (RU)"
+    },
+    "highlight": {
+      "title": "Краткое представление",
+      "maxChars": "макс. 500 символов",
+      "de": "На немецком",
+      "ru": "По-русски",
+      "placeholderDe": "z.B. Ich unterrichte Mathematik seit 5 Jahren...",
+      "placeholderRu": "например: Преподаю математику уже 5 лет..."
+    },
+    "fullDescription": {
+      "title": "Подробное описание",
+      "maxChars": "макс. 5000 символов",
+      "de": "На немецком",
+      "ru": "По-русски",
+      "placeholderDe": "Beschreiben Sie Ihre Erfahrung, Methodik, Erfolge...",
+      "placeholderRu": "Опишите свой опыт, методику, достижения..."
+    },
+    "save": "Сохранить",
+    "saving": "Сохранение..."
+  },
+  "changePassword": {
+    "title": "Изменить пароль",
+    "oldPassword": "Текущий пароль",
+    "newPassword": "Новый пароль (мин. 15 символов)",
+    "confirmPassword": "Подтвердите пароль",
+    "submit": "Изменить пароль",
+    "submitting": "Изменение..."
+  },
+  "changeEmail": {
+    "title": "Изменить E-Mail",
+    "newEmail": "Новый E-Mail",
+    "password": "Текущий пароль (для подтверждения)",
+    "submit": "Отправить ссылку подтверждения",
+    "submitting": "Отправка..."
+  },
+  "sessions": {
+    "title": "Активные сессии",
+    "revokeAll": "Выйти со всех устройств",
+    "empty": "Нет активных сессий.",
+    "unknownDevice": "Неизвестное устройство",
+    "createdAt": "Создана",
+    "expiresAt": "Истекает",
+    "revoke": "Выйти"
+  },
+  "media": {
+    "title": "Тест камеры и микрофона",
+    "error": "Нет доступа к камере/микрофону. Проверьте разрешения браузера.",
+    "video": "Видео",
+    "audio": "Аудио",
+    "startRecording": "Начать запись",
+    "stopRecording": "Остановить запись",
+    "playback": "Воспроизведение:",
+    "hint": "Если камера или микрофон не отображаются, проверьте разрешения браузера."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "title": "Häufig gestellte Fragen",
+  "items": [
+    {
+      "question": "Wie buche ich eine Unterrichtsstunde?",
+      "answer": "Suchen Sie einen Nachhilfelehrer, wählen Sie eine verfügbare Zeit und bestätigen Sie die Buchung. Der Lehrer erhält eine Benachrichtigung und bestätigt den Termin."
+    },
+    {
+      "question": "Wie läuft der Unterricht ab?",
+      "answer": "Der Unterricht findet per Videokonferenz statt. Nach der Buchung erhalten Sie einen Link zur Unterrichtsstunde. Kamera und Mikrofon können Sie vorab unter Einstellungen → Kamera testen prüfen."
+    },
+    {
+      "question": "Wie bezahle ich?",
+      "answer": "Die Bezahlung erfolgt direkt über die Plattform. Unterstützte Zahlungsmethoden: Kreditkarte, PayPal und Banküberweisung."
+    },
+    {
+      "question": "Kann ich eine Stunde stornieren?",
+      "answer": "Ja, bis zu 24 Stunden vor dem Termin kostenlos. Bei späteren Stornierungen kann eine Gebühr anfallen."
+    },
+    {
+      "question": "Wie werde ich Nachhilfelehrer auf TutorsMD?",
+      "answer": "Registrieren Sie sich als Nachhilfelehrer, füllen Sie Ihr Profil aus und warten Sie auf die Freischaltung durch unser Team. Dies dauert in der Regel 1–3 Werktage."
+    }
+  ]
+}
