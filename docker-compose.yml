@@ -146,26 +146,6 @@ services:
         max-size: "5m"
         max-file: "3"
 
-
-  #chat-backend:
-   # build: ./chatForUsers/backend
-    #container_name: chat-backend
-    #restart: always
-    #depends_on:
-     # - postgres
-    #environment:
-     # DATABASE_URL: "postgresql://postgres:12345@postgres:5432/Website?connection_limit=10&pool_timeout=30"
-
-    #ports:
-     # - "9000:9000"
-
-  #chat-frontend:
-   # build: ./chatForUsers/frontend
-    #container_name: chat-frontend
-    #restart: always
-    #ports:
-     # - "5173:80"
-
 volumes:
   postgres-data:
   redis-data:

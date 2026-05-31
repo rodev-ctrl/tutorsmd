@@ -23,7 +23,7 @@ const DashboardPage  = lazy(() => import('@pages/dashboard/DashboardPage'));
 const LessonsPage    = lazy(() => import('@pages/lesson/LessonsPage'));
 const LessonPage     = lazy(() => import('@pages/lesson/LessonPage'));
 const SettingsPage   = lazy(() => import('@pages/settings/SettingsPage'));
-const MediaCheckPage = lazy(() => import('@pages/settings/MediaCheckPage'));
+const MediaCheckPage = lazy(() => import('@pages/settings/sections/media-check/MediaCheckPage'));
 
 // ADMIN
 const AdminMessagesPage = lazy(() => import('@pages/admin/AdminMessagesPage'));
@@ -40,7 +40,7 @@ const router = createBrowserRouter([
   // AUTH
   { path: '/login',                  element: <LoginPage /> },
   { path: '/register',               element: <RegisterPage /> },
-  { path: '/register/tutor',         element: <RegisterPage role="tutor" /> },
+  { path: '/register/tutor',         element: <RegisterPage role="tutor" /> },   // проверить как работает UI
   { path: '/activate/:token',        element: <ActivatePage /> },
   { path: '/resend-verification',    element: <ResendVerificationPage /> },
   { path: '/forgot-password',        element: <ForgotPasswordPage /> },
@@ -71,3 +71,5 @@ const router = createBrowserRouter([
 ]);
 
 export const RouterProvider = () => <RRProvider router={router} />;
+
+

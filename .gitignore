@@ -13,3 +13,7 @@ chatForUsers/
 *.docx
 *.zip
 .codegpt/
+**/*.js
+!vite.config.js
+
+
