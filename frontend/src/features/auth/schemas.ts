@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const loginSchema = z.object({
   email:      z.string().email('Ungültige E-Mail-Adresse'),
   password:   z.string().min(1, 'Passwort ist erforderlich'),
-  activeRole: z.enum(['client', 'tutor']),
+  activeRole: z.enum(['client', 'tutor', 'admin']),
 });
 
 export const registerSchema = z.object({

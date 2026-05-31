@@ -136,7 +136,7 @@ services:
     networks:
       - tutors-network
     env_file:
-      - ./frontend/.env.production
+      - .env
     deploy:
       resources:
         limits:
