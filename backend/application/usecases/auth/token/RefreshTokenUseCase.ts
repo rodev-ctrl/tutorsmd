@@ -20,7 +20,7 @@ export class RefreshTokenUseCase {
     private readonly refreshTokenFactory: IRefreshTokenFactory,
   ) {}
 
-  async execute(rawToken: string, activeRole: Role): Promise<RefreshResult> {
+  async execute(rawToken: string, activeRole?: Role): Promise<RefreshResult> {
     // 1. Хэшируем и ищем в БД
     const incomingToken = this.refreshTokenFactory.fromRaw(rawToken);
     const record = await this.refreshTokenRepo.findByTokenHash(incomingToken.hash);
@@ -40,9 +40,11 @@ export class RefreshTokenUseCase {
     const user = await this.userRepo.findById(record.userId);
     if (!user) throw new DomainError('User not found');
 
+    const resolvedRole: Role = activeRole ?? user.roles[0];
+    
     // 3. Проверить роль
-    if (!user.hasRole(activeRole)) {
-      throw new DomainError(`User does not have role: ${activeRole}`);
+    if (!user.hasRole(resolvedRole)) {
+      throw new DomainError(`User does not have role: ${resolvedRole}`);
     }
 
     // 4. Rotation — отозвать старый
@@ -60,7 +62,7 @@ export class RefreshTokenUseCase {
     });
 
     // 5. Новый access token
-    const accessTokenV0 = AccessToken.create({ userId: user.id, activeRole });
+    const accessTokenV0 = AccessToken.create({ userId: user.id, activeRole: resolvedRole });
      const accessToken = this.accessTokenFactory.generate(accessTokenV0);
 
     return {
