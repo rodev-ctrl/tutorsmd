@@ -4,7 +4,9 @@ import { useSelector } from 'react-redux';
 import { selectUserId, selectActiveRole } from '@entities/user/model/selectors';
 import { tokenManager } from '@shared/lib/TokenManager';
 import { io } from 'socket.io-client';
+import { useTranslation } from 'react-i18next';
 export const VideoRoom = ({ lessonId, localStream, setLocalStream, remoteStreams, setRemoteStreams, canJoin, }) => {
+    const { t } = useTranslation('lesson');
     const userId = useSelector(selectUserId);
     const activeRole = useSelector(selectActiveRole);
     const localRef = useRef(null);
@@ -41,7 +43,6 @@ export const VideoRoom = ({ lessonId, localStream, setLocalStream, remoteStreams
         });
         socketRef.current = socket;
         socket.emit('joinLesson', { lessonId });
-        // ─── Participants ───
         socket.on('updateParticipants', async (list) => {
             setParticipants(list);
             for (const peerId of list) {
@@ -56,7 +57,6 @@ export const VideoRoom = ({ lessonId, localStream, setLocalStream, remoteStreams
             }
         });
         socket.on('tutorJoined', () => setTutorPresent(true));
-        // ─── SIGNALING ───
         socket.on('lesson:offer', async ({ from, offer }) => {
             if (peersRef.current.has(from))
                 return;
@@ -97,15 +97,10 @@ export const VideoRoom = ({ lessonId, localStream, setLocalStream, remoteStreams
         const pc = new RTCPeerConnection({
             iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
         });
-        localStream?.getTracks().forEach((track) => {
-            pc.addTrack(track, localStream);
-        });
+        localStream?.getTracks().forEach((track) => pc.addTrack(track, localStream));
         pc.onicecandidate = (e) => {
             if (e.candidate) {
-                socket.emit('lesson:ice-candidate', {
-                    to: peerId,
-                    candidate: e.candidate,
-                });
+                socket.emit('lesson:ice-candidate', { to: peerId, candidate: e.candidate });
             }
         };
         pc.ontrack = (e) => {
@@ -123,18 +118,18 @@ export const VideoRoom = ({ lessonId, localStream, setLocalStream, remoteStreams
     const totalVideos = 1 + remoteEntries.length;
     const cols = totalVideos <= 1 ? 1 : totalVideos <= 4 ? 2 : 3;
     // ───────────── UI ─────────────
-    return (_jsxs("div", { className: "flex-1 grid gap-2 p-2 bg-gray-900", style: { gridTemplateColumns: `repeat(${cols}, 1fr)` }, children: [_jsxs("div", { className: "relative bg-gray-800 rounded-xl overflow-hidden aspect-video", children: [_jsx("video", { ref: localRef, autoPlay: true, playsInline: true, muted: true, className: "w-full h-full object-cover" }), _jsxs("span", { className: "absolute bottom-2 left-2 text-xs text-white bg-black/50 px-2 py-0.5 rounded", children: ["Sie ", activeRole === 'tutor'
-                                ? '(Lehrer)'
+    return (_jsxs("div", { className: "flex-1 grid gap-2 p-2 bg-slate-950", style: { gridTemplateColumns: `repeat(${cols}, 1fr)` }, children: [_jsxs("div", { className: "relative bg-slate-900 rounded-2xl overflow-hidden aspect-video", children: [_jsx("video", { ref: localRef, autoPlay: true, playsInline: true, muted: true, className: "w-full h-full object-cover" }), _jsxs("span", { className: "absolute bottom-2 left-2 text-xs text-white\r\n          bg-black/60 backdrop-blur-sm px-2 py-1 rounded-lg", children: [t('videoRoom.you'), ' ', activeRole === 'tutor'
+                                ? t('videoRoom.roleTeacher')
                                 : activeRole === 'admin'
-                                    ? '(Admin)'
-                                    : '(Schüler)'] }), _jsxs("span", { className: "absolute top-2 right-2 text-xs text-white bg-black/50 px-2 py-1 rounded", children: [participants.length, " online"] }), participants.length === 1 && (_jsx("span", { className: "absolute top-2 left-2 text-xs text-yellow-400", children: "Waiting for others..." })), activeRole === 'client' && !tutorPresent && (_jsx("span", { className: "absolute top-6 left-2 text-xs text-red-400", children: "Tutor not joined" }))] }), remoteEntries.map(([peerId, stream]) => (_jsx(RemoteVideo, { peerId: peerId, stream: stream }, peerId))), !canJoin && (_jsx("div", { className: "col-span-full flex items-center justify-center", children: _jsx("p", { className: "text-gray-400 text-sm", children: "Der Unterricht hat noch nicht begonnen." }) }))] }));
+                                    ? t('videoRoom.roleAdmin')
+                                    : t('videoRoom.roleStudent')] }), _jsxs("span", { className: "absolute top-2 right-2 text-xs text-white\r\n          bg-black/60 backdrop-blur-sm px-2 py-1 rounded-lg", children: [participants.length, " ", t('videoRoom.online')] }), participants.length === 1 && (_jsx("span", { className: "absolute top-2 left-2 text-xs text-amber-400\r\n            bg-black/60 backdrop-blur-sm px-2 py-1 rounded-lg", children: t('videoRoom.waitingForOthers') })), activeRole === 'client' && !tutorPresent && (_jsx("span", { className: "absolute top-10 left-2 text-xs text-red-400\r\n            bg-black/60 backdrop-blur-sm px-2 py-1 rounded-lg", children: t('videoRoom.tutorNotJoined') }))] }), remoteEntries.map(([peerId, stream]) => (_jsx(RemoteVideo, { peerId: peerId, stream: stream }, peerId))), !canJoin && (_jsx("div", { className: "col-span-full flex items-center justify-center py-16", children: _jsx("p", { className: "text-slate-400 text-sm", children: t('videoRoom.lessonNotStarted') }) }))] }));
 };
-// ───────────── Remote ─────────────
+// ───────────── Remote video ─────────────
 const RemoteVideo = ({ stream, peerId }) => {
     const ref = useRef(null);
     useEffect(() => {
         if (ref.current)
             ref.current.srcObject = stream;
     }, [stream]);
-    return (_jsxs("div", { className: "relative bg-gray-800 rounded-xl overflow-hidden aspect-video", children: [_jsx("video", { ref: ref, autoPlay: true, playsInline: true, className: "w-full h-full object-cover" }), _jsx("span", { className: "absolute bottom-2 left-2 text-xs text-white bg-black/50 px-2 py-0.5 rounded", children: peerId.slice(0, 8) })] }));
+    return (_jsxs("div", { className: "relative bg-slate-900 rounded-2xl overflow-hidden aspect-video", children: [_jsx("video", { ref: ref, autoPlay: true, playsInline: true, className: "w-full h-full object-cover" }), _jsx("span", { className: "absolute bottom-2 left-2 text-xs text-white\r\n        bg-black/60 backdrop-blur-sm px-2 py-1 rounded-lg", children: peerId.slice(0, 8) })] }));
 };
