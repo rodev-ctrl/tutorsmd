@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useRegisterClientMutation, useRegisterTutorMutation } from '@shared/api/authApi';
@@ -25,7 +24,7 @@ export default function RegisterPage({ role = 'client' }: Props) {
   const [success, setSuccess]         = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema) as Resolver<RegisterFormData>,
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       languageCode: 'de',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

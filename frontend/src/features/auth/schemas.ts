@@ -15,7 +15,7 @@ export const registerSchema = z.object({
     .max(64,  'Maximal 64 Zeichen'),
   confirmPassword: z.string(),
   timezone:     z.string().optional(),
-  languageCode: z.enum(['en', 'de', 'ru']).default('de'),
+  languageCode: z.enum(['en', 'de', 'ru']),
 }).refine(
   (data) => data.password === data.confirmPassword,
   { message: 'Passwörter stimmen nicht überein', path: ['confirmPassword'] },
