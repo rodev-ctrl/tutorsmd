@@ -10,6 +10,7 @@ import {
   SubmitReviewSchema,
   GetTutorReviewsQuerySchema,
 } from '../controllers/review/review.schema';
+import { reviewSubmitLimiter } from '../middlewares/rateLimiter';
 
 export const createReviewRouter = (
   controller: ReviewController,
@@ -26,6 +27,7 @@ export const createReviewRouter = (
     '/',
     requireAuth,
     requireRole('client'),
+    reviewSubmitLimiter,
     validate(SubmitReviewSchema),
     (req, res) => controller.submit(req, res),
   );

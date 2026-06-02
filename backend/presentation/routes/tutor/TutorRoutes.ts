@@ -9,6 +9,7 @@ import {
   RejectTutorSchema,
   TutorIdParamsSchema,
 } from '../../controllers/tutor/tutor.schema';
+import { tutorProfileUpdateLimiter, adminTutorActionLimiter } from '../../middlewares/rateLimiter';
 
 export const createTutorRouter = (controller: ITutorController): Router => {
   const router = Router();
@@ -28,6 +29,7 @@ export const createTutorRouter = (controller: ITutorController): Router => {
     '/profile',
     requireAuth,
     requireRole('tutor'),
+    tutorProfileUpdateLimiter,
     validate(UpdateTutorProfileSchema),
     wrap(async (req, res) => {
       await controller.updateProfile(req as any, res);
@@ -49,6 +51,7 @@ export const createTutorRouter = (controller: ITutorController): Router => {
     '/:tutorId/approve',
     requireAuth,
     requireRole('admin'),
+    adminTutorActionLimiter,
     validate(TutorIdParamsSchema, 'params'),
     wrap(async (req, res) => {
       await controller.approve(req as any, res);
@@ -59,6 +62,7 @@ export const createTutorRouter = (controller: ITutorController): Router => {
     '/:tutorId/reject',
     requireAuth,
     requireRole('admin'),
+    adminTutorActionLimiter,
     validate(TutorIdParamsSchema, 'params'),
     validate(RejectTutorSchema),
     wrap(async (req, res) => {
