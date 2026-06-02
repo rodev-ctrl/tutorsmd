@@ -76,7 +76,7 @@ export const VideoRoom = ({
       }
     });
 
-    socket.on('tutorJoined', () => setTutorPresent(true));
+    socket.on('tutor:joined', () => setTutorPresent(true));
 
     socket.on('lesson:offer', async ({ from, offer }) => {
       if (peersRef.current.has(from)) return;

@@ -30,14 +30,14 @@ export const LessonChat = ({ lessonId }: { lessonId: string }) => {
     });
     socketRef.current = socket;
 
-    socket.emit('joinLessonChat', { lessonId });
+    socket.emit('lesson:chat:join', { lessonId });
 
-    socket.on('lessonChatHistory', (history: ChatMessage[]) => {
+    socket.on('lesson:chat:history', (history: ChatMessage[]) => {
       setMessages(history);
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     });
 
-    socket.on('newLessonMessage', (msg: ChatMessage) => {
+    socket.on('lesson:message:new', (msg: ChatMessage) => {
       setMessages(prev => [...prev, msg]);
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     });
@@ -47,7 +47,11 @@ export const LessonChat = ({ lessonId }: { lessonId: string }) => {
 
   const send = () => {
     if (!text.trim()) return;
-    socketRef.current?.emit('lessonMessage', { lessonId, text: text.trim() });
+    socketRef.current?.emit('lesson:message', { lessonId, text: text.trim() }, (response: any) => {
+      if (response?.error) {
+        console.error(response.error);
+      }
+});
     setText('');
   };
 
