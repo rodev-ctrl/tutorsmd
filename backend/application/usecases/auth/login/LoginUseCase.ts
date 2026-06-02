@@ -1,3 +1,5 @@
+import { logger } from '../../../../shared/utils/logger';
+
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
 import { IRefreshTokenRepository } from '../../../../domain/repositories/IRefreshTokenRepository';
 import { IPasswordHasher } from '../../../ports/IPasswordHasher';

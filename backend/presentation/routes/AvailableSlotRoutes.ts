@@ -4,6 +4,7 @@ import { requireAuth } from '../middlewares/auth/requireAuth';
 import { requireRole } from '../middlewares/auth/requireRole';
 import { validate } from '../middlewares/validate';
 import { CreateAvailableSlotSchema } from '../controllers/available-slot/available-slot.schema';
+import { slotCreateLimiter, slotDeleteLimiter } from '../middlewares/rateLimiter';
 
 export const createAvailableSlotRouter = (controller: IAvailableSlotController): Router => {
   const router = Router();
@@ -27,6 +28,7 @@ export const createAvailableSlotRouter = (controller: IAvailableSlotController):
     '/',
     requireAuth,
     requireRole('tutor'),
+    slotCreateLimiter,
     validate(CreateAvailableSlotSchema),
     (req, res) => controller.createSlot(req, res),
   );
@@ -36,6 +38,7 @@ export const createAvailableSlotRouter = (controller: IAvailableSlotController):
     '/:slotId',
     requireAuth,
     requireRole('tutor'),
+    slotDeleteLimiter,
     (req, res) => controller.deleteSlot(req, res),
   );
 

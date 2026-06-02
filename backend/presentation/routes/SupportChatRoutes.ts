@@ -8,6 +8,7 @@ import {
   GetSupportHistoryQuerySchema,
   SendSupportChatMessageSchema,
 } from '../controllers/support-chat/support-chat.schema';
+import { supportChatJoinLimiter, supportChatLimiter } from '../middlewares/rateLimiter';
 
 export const createSupportChatRouter = (
   controller: ISupportChatController
@@ -19,6 +20,7 @@ export const createSupportChatRouter = (
   // ─── JOIN ─────────────────────────────────────────────
   router.post(
     '/join',
+    supportChatJoinLimiter,
     wrap(async (req, res) => {
       await controller.join(req, res);
     })
@@ -37,6 +39,7 @@ export const createSupportChatRouter = (
   // ─── SEND MESSAGE ─────────────────────────────────────
   router.post(
     '/:chatId/messages',
+    supportChatLimiter,
     validate(ChatIdParamsSchema, 'params'),
     validate(SendSupportChatMessageSchema),
     wrap(async (req, res) => {

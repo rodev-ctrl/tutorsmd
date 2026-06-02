@@ -1,11 +1,11 @@
 // presentation/websocket/handlers/lessonHandler.ts
 //
 // Ответственность:
-//   joinLesson       — авторизация в комнате, Redis presence
-//   joinLessonChat   — подписка на отдельную чат-комнату + история из Postgres
-//   lessonMessage    — сохранение сообщения в Postgres, broadcast
-//   leaveLesson      — явный выход, очистка presence
-//   endLesson        — тьютор/админ завершает урок, опционально обновляет статус в БД
+//   lesson:join       — авторизация в комнате, Redis presence
+//   lesson:chat:join   — подписка на отдельную чат-комнату + история из Postgres
+//   lesson:message    — сохранение сообщения в Postgres, broadcast
+//   lesson:leave      — явный выход, очистка presence
+//   lesson:end        — тьютор/админ завершает урок, опционально обновляет статус в БД
 //   disconnect       — автоматическое удаление из presence
 //
 // Файлы в чате урока передаются НЕ через сокет.
@@ -29,6 +29,7 @@ import { DomainError } from "../../../../domain/errors/DomainError";
 import { NotFoundError } from "../../../../domain/errors/NotFoundError";
 import { ConflictError } from "../../../../domain/errors/ConflictError";
 import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError";
+import { getRateLimitConfig } from "../../utils/getRateLimitConfig";
 
 
 // ── Resolve lesson context ────────────────────────────────────────────────────
@@ -80,11 +81,11 @@ export const createLessonHandler = (
   //
   socket.on(
     "joinLesson",
-    safeHandler("joinLesson", async (data: { lessonId: string }) => {
+    safeHandler("lesson:join", async (data: { lessonId: string }) => {
       // Идемпотентность: уже в уроке -> повторно шлём joinedLesson
       const existing = socket.data.lessonCtx as LessonContext | undefined;
       if (existing) {
-        socket.emit("joinedLesson", {
+        socket.emit("lesson:joined", {
           startAt: existing.startAt,
           status:  existing.status,
         });
@@ -93,13 +94,13 @@ export const createLessonHandler = (
 
       const parsed = JoinLessonSchema.safeParse(data);
       if (!parsed.success) {
-        socket.emit("joinLessonError", { code: "BAD_REQUEST", message: parsed.error.issues[0].message });
+        socket.emit("lesson:join:error", { code: "BAD_REQUEST", message: parsed.error.issues[0].message });
         return;
       }
 
       const ctx = await resolveLessonContext(prisma, parsed.data.lessonId);
       if (!ctx) {
-        socket.emit("joinLessonError", { code: "NOT_FOUND", message: "Lesson not found" });
+        socket.emit("lesson:join:error", { code: "NOT_FOUND", message: "Lesson not found" });
         return;
       }
 
@@ -113,7 +114,7 @@ export const createLessonHandler = (
 
 
       if (!allowed) {
-        socket.emit("joinLessonError", { code: "FORBIDDEN", message: "Access denied" });
+        socket.emit("lesson:join:error", { code: "FORBIDDEN", message: "Access denied" });
         return;
       }
 
@@ -122,6 +123,13 @@ export const createLessonHandler = (
       const activeStatuses = ["pending", "confirmed", "in_progress"];
       if (!activeStatuses.includes(ctx.status)) {
         socket.emit("lesson:error", { code: "LESSON_NOT_ACTIVE", status: ctx.status });
+        return;
+      }
+
+      const { limit, windowMs } = getRateLimitConfig(user.activeRole, "lesson:join");
+
+      if (await isRateLimited(socket, limit, "lesson:join", windowMs)) {
+        socket.emit("lesson:join:error", { error: "Too many requests" });
         return;
       }
 
@@ -135,10 +143,10 @@ export const createLessonHandler = (
       io.to(ctx.lessonId).emit("updateParticipants", participants);
 
       if (user.activeRole === "tutor") {
-        io.to(ctx.lessonId).emit("tutorJoined", true);
+        io.to(ctx.lessonId).emit("tutor:joined", true);
       }
 
-      socket.emit("joinedLesson", {
+      socket.emit("lesson:join", {
         startAt: ctx.startAt,
         status:  ctx.status,
       });
@@ -154,14 +162,21 @@ export const createLessonHandler = (
   // Сервер: шлёт lessonChatHistory (последние 50 из Postgres)
   //
   socket.on(
-    "joinLessonChat",
-    safeHandler("joinLessonChat", async (data: { lessonId: string }) => {
+    "lesson:chat:join",
+    safeHandler("lesson:chat:join", async (data: { lessonId: string }, callback) => {
       const parsed = JoinLessonSchema.safeParse(data);
       if (!parsed.success) return;
 
       const ctx = socket.data.lessonCtx as LessonContext | undefined;
       if (!ctx || ctx.lessonId !== parsed.data.lessonId) {
-        socket.emit("joinLessonChatError", { code: "NOT_IN_LESSON" });
+        socket.emit("lesson:chat:join:error", { code: "NOT_IN_LESSON" });
+        return;
+      }
+
+      const { limit, windowMs } = getRateLimitConfig(user.activeRole, "lesson:chat:join");
+
+      if (await isRateLimited(socket, limit, "lesson:chat:join", windowMs)) {
+        socket.emit("lesson:chat:join:error", { error: "Too many requests" });
         return;
       }
  
@@ -185,10 +200,10 @@ export const createLessonHandler = (
         },
       });
 
-      socket.emit("lessonChatHistory", history);
-      socket.emit("joinedLessonChat", { success: true });
+      socket.emit("lesson:chat:history", history);
+      socket.emit("lesson:chat:joined", { success: true });
 
-      io.to(chatRoom).emit("userJoinedLessonChat", {
+      io.to(chatRoom).emit("lesson:chat:joined:user", {
         userId: user.id,
         role:   user.activeRole,
       });
@@ -202,14 +217,14 @@ export const createLessonHandler = (
   //   Файл в байтах через сокет НЕ передаётся.
   //
   socket.on(
-    "lessonMessage",
-    safeHandler("lessonMessage", async (data: {
+    "lesson:message",
+    safeHandler("lesson:message", async (data: {
       lessonId: string;
       text:     string;
       fileKey?: string;
     }) => {
       // 60 сообщений / 60 секунд
-      if (await isRateLimited(socket, 60, "lessonMessage", 60_000)) return;
+      if (await isRateLimited(socket, 60, "lesson:message", 60_000)) return;
 
       const parsed = LessonMessageSchema.safeParse(data);
       if (!parsed.success) return;
@@ -217,6 +232,13 @@ export const createLessonHandler = (
       const ctx = socket.data.lessonCtx as LessonContext | undefined;
        if (!ctx || ctx.lessonId !== parsed.data.lessonId) return;
       if (!["confirmed", "in_progress"].includes(ctx.status)) return;
+
+      
+      const { limit, windowMs } = getRateLimitConfig(user.activeRole, "lesson:message");
+
+      if (await isRateLimited(socket, limit, "lesson:message", windowMs)) {
+        return;
+      }
 
 
       const message = await prisma.lessonMessage.create({
@@ -237,7 +259,7 @@ export const createLessonHandler = (
         },
       });
 
-      io.to(`lesson-chat:${ctx.lessonId}`).emit("newLessonMessage", message);
+      io.to(`lesson-chat:${ctx.lessonId}`).emit("lesson:message:new", message);
     }),
   );
 
@@ -298,8 +320,8 @@ export const createLessonHandler = (
   // disconnect обрабатывает внезапный разрыв соединения.
   //
   socket.on(
-    "leaveLesson",
-    safeHandler("leaveLesson", async (data: { lessonId: string }) => {
+    "lesson:leave",
+    safeHandler("lesson:leave", async (data: { lessonId: string }) => {
        const parsed = JoinLessonSchema.safeParse(data);
       if (!parsed.success) return;
 
@@ -325,7 +347,7 @@ export const createLessonHandler = (
   //
   socket.on(
     "endLesson",
-    safeHandler("endLesson", async (data: { lessonId: string }) => {
+    safeHandler("lesson:end", async (data: { lessonId: string }) => {
       if (user.activeRole !== "tutor" && user.activeRole !== "admin") return;
 
        const parsed = JoinLessonSchema.safeParse(data);

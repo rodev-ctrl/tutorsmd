@@ -2,12 +2,19 @@ import { Router } from 'express';
 import { requireAuth } from '../middlewares/auth/requireAuth';
 import { validate } from '../middlewares/validate';
 import { SubmitFeedbackSchema } from '../controllers/feedback/feedback.schema';
+import { feedbackLimiter } from '../middlewares/rateLimiter';
 
 export const createFeedbackRouter = (controller: any): Router => {
   const router = Router();
 
   // POST /feedback
-  router.post('/', requireAuth, validate(SubmitFeedbackSchema), (req, res) => controller.submitFeedback(req, res));
+  router.post(
+    '/', 
+    requireAuth, 
+    feedbackLimiter,
+    validate(SubmitFeedbackSchema), 
+    (req, res) => controller.submitFeedback(req, res)
+  );
 
   return router;
 };

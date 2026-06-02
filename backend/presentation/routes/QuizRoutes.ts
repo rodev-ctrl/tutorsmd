@@ -14,15 +14,13 @@ import {
 } from '../controllers/quiz/quiz.schema';
 
 import { QuizController } from '../controllers/quiz/QuizController';
+import { quizCreateLimiter, quizAttemptLimiter, quizSubmitLimiter } from '../middlewares/rateLimiter';
 
 export const createQuizRouter = (
   controller: QuizController,
 ): Router => {
   const router = Router();
 
-  // ───────────────────────────────────────────────────────────
-  // Quiz management
-  // ───────────────────────────────────────────────────────────
 
   // POST /quizzes
   // Tutor creates quiz
@@ -30,6 +28,7 @@ export const createQuizRouter = (
     '/',
     requireAuth,
     requireRole('tutor'),
+    quizCreateLimiter,
     validate(CreateQuizSchema),
     (req, res) => controller.createQuiz(req as any, res),
   );
@@ -40,6 +39,7 @@ export const createQuizRouter = (
     '/:quizId/questions',
     requireAuth,
     requireRole('tutor'),
+    quizCreateLimiter,
     validate(AddQuizQuestionSchema),
     (req, res) => controller.addQuestion(req as any, res),
   );
@@ -54,6 +54,7 @@ export const createQuizRouter = (
     '/lessons/:lessonId/quizzes',
     requireAuth,
     requireRole('tutor'),
+    quizCreateLimiter,
     validate(AssignQuizToLessonSchema),
     (req, res) => controller.assignToLesson(req as any, res),
   );
@@ -68,6 +69,7 @@ export const createQuizRouter = (
     '/:quizId/attempts',
     requireAuth,
     requireRole('client'),
+    quizAttemptLimiter,
     validate(StartQuizAttemptSchema),
     (req, res) => controller.startAttempt(req as any, res),
   );
@@ -78,6 +80,7 @@ export const createQuizRouter = (
     '/attempts/:attemptId/submit',
     requireAuth,
     requireRole('client'),
+    quizSubmitLimiter,
     validate(SubmitQuizAttemptSchema),
     (req, res) => controller.submitAttempt(req as any, res),
   );
@@ -92,6 +95,7 @@ export const createQuizRouter = (
     '/attempts/:attemptId/feedback',
     requireAuth,
     requireRole('tutor'),
+    quizCreateLimiter,
     validate(ProvideAnswerFeedbackSchema),
     (req, res) => controller.provideAnswerFeedback(req as any, res),
   );
