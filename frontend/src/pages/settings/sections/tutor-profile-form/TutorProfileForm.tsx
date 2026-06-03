@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormData, schema } from './schema';
-import { useGetTutorProfileQuery, useUpdateTutorProfileMutation } from '@shared/api/tutor/tutorApi';
+import { useGetTutorProfileQuery, useSubmitApplicationMutation, useUpdateTutorProfileMutation } from '@shared/api/tutor/tutorApi';
 import { Spinner } from '@shared/index';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +11,8 @@ export const TutorProfileForm = () => {
 
   const { data: tutor, isLoading } = useGetTutorProfileQuery();
   const [update, { isLoading: saving, isSuccess }] = useUpdateTutorProfileMutation();
+  const [submitApp, { isLoading: submitting }] = useSubmitApplicationMutation();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -39,6 +41,15 @@ export const TutorProfileForm = () => {
     await update(data).unwrap().catch(() => {});
   };
 
+  const handleSubmitAdmin = async () => {
+  setSubmitError(null);
+  try {
+    await submitApp().unwrap();
+  } catch (err: any) {
+    setSubmitError(err?.data?.message ?? 'Fehler beim Einreichen');
+  }
+};
+
   if (isLoading) return <Spinner />;
 
   const approvalStatus = tutor?.approvalStatus;
@@ -57,6 +68,59 @@ export const TutorProfileForm = () => {
           </p>
         </div>
       )}
+
+      {/* Submit application */}
+{(approvalStatus === 'pending' || approvalStatus === 'rejected') && (
+  <div className="border-t border-slate-200 pt-6 mt-6">
+    {approvalStatus === 'rejected' && tutor?.rejectionReason && (
+      <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 mb-4">
+        <p className="text-sm font-semibold text-red-600">Ablehnungsgrund:</p>
+        <p className="text-sm text-red-600 mt-1">{tutor.rejectionReason}</p>
+      </div>
+    )}
+    {submitError && (
+      <div className="bg-red-50 border border-red-200 text-red-600 text-sm
+        rounded-2xl px-4 py-3 mb-4">
+        {submitError}
+      </div>
+    )}
+    <button
+      type="button"
+      onClick={handleSubmitAdmin}
+      disabled={submitting}
+      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50
+        text-white text-sm font-medium px-6 py-2.5 rounded-xl transition"
+    >
+      {submitting ? 'Wird eingereicht...' : 'Bewerbung einreichen →'}
+    </button>
+  </div>
+)}
+
+{approvalStatus === 'submitted' && (
+  <div className="border-t border-slate-200 pt-6 mt-6">
+    <div className="bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4">
+      <p className="text-sm font-semibold text-blue-700">
+        ✓ Bewerbung eingereicht
+      </p>
+      <p className="text-xs text-blue-600 mt-1">
+        Wir prüfen Ihr Profil und melden uns bald.
+      </p>
+    </div>
+  </div>
+)}
+
+{approvalStatus === 'under_review' && (
+  <div className="border-t border-slate-200 pt-6 mt-6">
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
+      <p className="text-sm font-semibold text-amber-700">
+        🔍 Profil wird geprüft
+      </p>
+      <p className="text-xs text-amber-600 mt-1">
+        Unser Team prüft Ihr Profil aktiv.
+      </p>
+    </div>
+  </div>
+)}
 
       {approvalStatus === 'rejected' && (
         <div className="bg-red-50 border border-red-200 rounded-3xl px-5 py-4">

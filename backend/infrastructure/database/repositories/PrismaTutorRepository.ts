@@ -26,7 +26,7 @@ export class PrismaTutorRepository implements ITutorRepository {
   
   async findPendingWithUser(): Promise<PendingTutorResult[]> {
     const records = await this.prisma.tutor.findMany({
-      where: { approvalStatus: 'pending' },
+      where: { approvalStatus: { in: ['submitted', 'under_review'] as any } },
       include: { user: true },
       orderBy: { createdAt: 'asc' },
     });

@@ -27,7 +27,7 @@ export interface UserProfile {
   };
   tutor?: {
     id:             string;
-    approvalStatus: 'pending' | 'approved' | 'rejected';
+    approvalStatus: 'pending' | 'submitted' | 'under_review' | 'approved' | 'rejected';
     hourlyRate:     number | null;
     ratingAvg:      number;
     ratingCount:    number;

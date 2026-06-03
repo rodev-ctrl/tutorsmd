@@ -3,11 +3,13 @@ import {
   useGetPendingTutorsQuery,
   useApproveTutorMutation,
   useRejectTutorMutation,
+  useStartReviewMutation,
 } from '@shared/api/tutor/tutorApi';
 import { Spinner, useGetUserLessonsQuery } from '@shared/index';
 import { LessonCard } from '@widgets/lesson-card/index';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 
 export const AdminDashboard = () => {
   const { t } = useTranslation('dashboard');
@@ -16,7 +18,11 @@ export const AdminDashboard = () => {
   const { data: lessonsData, isLoading: lessonsLoading } = useGetUserLessonsQuery({});
 
   const [approve, { isLoading: approving }] = useApproveTutorMutation();
-  const [reject,  { isLoading: rejecting }] = useRejectTutorMutation();
+  const [reject] = useRejectTutorMutation();
+
+  const [startReview] = useStartReviewMutation();
+const [rejectReason, setRejectReason] = useState<Record<string, string>>({});
+const [rejectOpen, setRejectOpen] = useState<string | null>(null);
 
   const pendingTutors    = tutorsData?.tutors ?? [];
   const allLessons       = lessonsData?.lessons ?? [];
@@ -44,44 +50,76 @@ export const AdminDashboard = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {pendingTutors.map((tutor) => (
-              <div
-                key={tutor.tutorId}
-                className="bg-white rounded-3xl border border-slate-200
-                  p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                <div>
-                  <p className="font-semibold text-slate-900 text-sm">
-                    {tutor.name} {tutor.surname}
-                  </p>
-                  <p className="text-sm text-slate-500 mt-0.5">{tutor.email}</p>
-                  {tutor.nameDe && (
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {t('admin.pendingTutors.nameDe')}: {tutor.nameDe}
-                    </p>
-                  )}
-                </div>
+           {pendingTutors.map((tutor) => (
+  <div key={tutor.tutorId}
+    className="bg-white rounded-3xl border border-slate-200 p-5 space-y-4">
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <p className="font-semibold text-slate-900">{tutor.name} {tutor.surname}</p>
+        <p className="text-sm text-slate-500">{tutor.email}</p>
+        <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium
+          ${tutor.approvalStatus === 'submitted' ? 'bg-blue-100 text-blue-700' : ''}
+          ${tutor.approvalStatus === 'under_review' ? 'bg-amber-100 text-amber-700' : ''}
+        `}>
+          {tutor.approvalStatus}
+        </span>
+      </div>
 
-                <div className="flex gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => approve({ tutorId: tutor.tutorId })}
-                    disabled={approving}
-                    className="bg-green-600 hover:bg-green-700 disabled:opacity-50
-                      text-white text-sm font-medium px-4 py-2 rounded-xl transition"
-                  >
-                    {t('admin.pendingTutors.approve')}
-                  </button>
-                  <button
-                    onClick={() => reject({ tutorId: tutor.tutorId })}
-                    disabled={rejecting}
-                    className="bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600
-                      text-sm font-medium px-4 py-2 rounded-xl transition border border-red-200"
-                  >
-                    {t('admin.pendingTutors.reject')}
-                  </button>
-                </div>
-              </div>
-            ))}
+      <div className="flex gap-2 flex-wrap justify-end">
+        {tutor.approvalStatus === 'submitted' && (
+          <button onClick={() => startReview(tutor.tutorId)}
+            className="bg-slate-100 hover:bg-slate-200 text-slate-700
+              text-xs px-3 py-1.5 rounded-lg transition">
+            Prüfung starten
+          </button>
+        )}
+        <button onClick={() => approve({ tutorId: tutor.tutorId })}
+          disabled={approving}
+          className="bg-green-600 hover:bg-green-700 text-white
+            text-xs px-3 py-1.5 rounded-lg transition">
+          Freischalten
+        </button>
+        <button onClick={() => setRejectOpen(tutor.tutorId)}
+          className="bg-red-50 hover:bg-red-100 text-red-600
+            text-xs px-3 py-1.5 rounded-lg transition border border-red-200">
+          Ablehnen
+        </button>
+      </div>
+    </div>
+
+    {/* Reject form */}
+    {rejectOpen === tutor.tutorId && (
+      <div className="border-t border-slate-100 pt-4 space-y-2">
+        <textarea
+          placeholder="Ablehnungsgrund (optional)..."
+          rows={2}
+          value={rejectReason[tutor.tutorId] ?? ''}
+          onChange={(e) => setRejectReason(prev => ({
+            ...prev, [tutor.tutorId]: e.target.value
+          }))}
+          className="w-full border border-slate-300 rounded-xl px-3 py-2
+            text-sm focus:outline-none focus:ring-2 focus:ring-red-100 resize-none"
+        />
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              reject({ tutorId: tutor.tutorId, reason: rejectReason[tutor.tutorId] });
+              setRejectOpen(null);
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white
+              text-xs px-4 py-1.5 rounded-lg transition">
+            Bestätigen
+          </button>
+          <button onClick={() => setRejectOpen(null)}
+            className="text-slate-500 text-xs px-4 py-1.5 rounded-lg
+              hover:bg-slate-100 transition">
+            Abbrechen
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+))}
           </div>
         )}
       </section>

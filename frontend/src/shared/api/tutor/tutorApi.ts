@@ -17,7 +17,8 @@ export interface TutorPublic {
   highlightRu:    string | null;
   fulldescribeDe: string | null;
   fulldescribeRu: string | null;
-  approvalStatus: 'pending' | 'approved' | 'rejected';
+  approvalStatus: 'pending' | 'submitted' | 'under_review' | 'approved' | 'rejected';
+  rejectionReason: string | null;
   subjects:       TutorSubject[];
 }
 
@@ -46,6 +47,7 @@ export interface PendingTutor {
   email:     string;
   nameDe:    string | null;
   nameRu:    string | null;
+  approvalStatus: 'pending' | 'submitted' | 'under_review' | 'approved' | 'rejected';
   createdAt: string;
 }
 
@@ -73,6 +75,31 @@ export const tutorApi = baseApi.injectEndpoints({
       query: () => '/tutor/pending',
       providesTags: ['Tutor'],
     }),
+
+   
+// POST /tutor/submit — тьютор подаёт заявку
+submitApplication: build.mutation<void, void>({
+  query: () => ({
+    url: '/tutor/submit',
+    method: 'POST',
+  }),
+  invalidatesTags: ['Tutor'],
+}),
+
+// GET /tutor/:tutorId/admin/review — админ смотрит профиль
+getReviewProfile: build.query<{ profile: TutorPublic }, string>({
+  query: (tutorId) => `/tutor/${tutorId}/admin/review`,
+  providesTags: ['Tutor'],
+}),
+
+// POST /tutor/:tutorId/admin/start-review
+startReview: build.mutation<void, string>({
+  query: (tutorId) => ({
+    url: `/tutor/${tutorId}/admin/start-review`,
+    method: 'POST',
+  }),
+  invalidatesTags: ['Tutor'],
+}),
 
     // POST /tutor/:tutorId/approve — admin
     approveTutor: build.mutation<void, { tutorId: string }>({
@@ -102,4 +129,7 @@ export const {
   useGetPendingTutorsQuery,
   useApproveTutorMutation,
   useRejectTutorMutation,
+  useSubmitApplicationMutation,
+  useGetReviewProfileQuery,
+  useStartReviewMutation,
 } = tutorApi;

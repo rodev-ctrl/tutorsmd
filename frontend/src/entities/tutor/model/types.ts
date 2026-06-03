@@ -1,4 +1,4 @@
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+export type ApprovalStatus = 'pending' | 'submitted' | 'under_review' | 'approved' | 'rejected';
 
 export interface TutorPublic {
   id:             string;
@@ -18,4 +18,5 @@ export interface TutorPublic {
   fulldescribeDe: string | null;
   fulldescribeRu: string | null;
   approvalStatus: ApprovalStatus;
+  rejectionReason: string | null;
 }
