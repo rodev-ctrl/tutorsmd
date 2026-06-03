@@ -78,26 +78,19 @@ export default function SupportChatPage() {
 
   const { t } = useTranslation('support');
 
-    useEffect(() => {
+     // Debug
+  useEffect(() => {
     console.log('[SupportChat Debug] chat data:', chat);
   }, [chat]);
-  
-  useEffect(() => {
-    if (chat?.messages?.length) {
-      setMessages(chat.messages);
-      setHasMore(chat.messages.length >= 50);
-    }
-  }, [chat]);
 
+  // Socket connection — ЖДЁМ пока chat.id действительно появится
   useEffect(() => {
-     console.log(chat);
     if (!chat?.id) {
-      console.log(chat);
-      console.log('Chat data not ready yet, waiting...');
+      console.log('[SupportChat] Waiting for chat data...');
       return;
     }
 
-    console.log(`[SupportChat] Initializing socket for chat ${chat.id}`);
+    console.log(`[SupportChat] Chat ready → initializing socket for ${chat.id}`);
 
     const socket = io(import.meta.env.VITE_SOCKET_URL as string, {
       withCredentials: true,
@@ -105,16 +98,15 @@ export default function SupportChatPage() {
       reconnection: true,
       reconnectionAttempts: 5,
     });
+
     socketRef.current = socket;
 
     const handleConnect = () => {
-      console.log(`[SupportChat] Socket connected, joining chat ${chat.id}`);
+      console.log(`[SupportChat] Socket connected → joining chat ${chat.id}`);
       socket.emit('support:join', {}, (res: any) => {
         console.log('JOIN RESPONSE:', res);
         if (res?.ok) {
           setIsJoined(true);
-        } else {
-          console.error('support:join failed', res);
         }
       });
     };
@@ -128,20 +120,21 @@ export default function SupportChatPage() {
 
     socket.on('support:message', (msg: SupportMessage) => {
       setMessages((prev) => [...prev, msg]);
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 80);
     });
 
+    // Join
     socket.emit('support:join', {}, (res: any) => {
       console.log('JOIN RESPONSE:', res);
-      if (res?.ok) {
-      setIsJoined(true);
-    } else {
-      console.error('support:join failed', res);
-    }
+      if (res?.ok) setIsJoined(true);
     });
 
-    return () => { socket.disconnect(); setIsJoined(false); };
-  }, [chat?.id]);
+    return () => {
+      console.log(`[SupportChat] Disconnecting socket for chat ${chat.id}`);
+      socket.disconnect();
+      setIsJoined(false);
+    };
+  }, [chat?.id]); // ← только от id
 
   const loadMore = useCallback(async () => {
     if (!chat?.id || !messages.length || loadingMore) return;
