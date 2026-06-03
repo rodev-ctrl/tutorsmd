@@ -36,10 +36,14 @@ export const createTutorRouter = (controller: ITutorController): Router => {
     }),
   );
 
+   // Тьютор подаёт заявку
+  router.post('/submit', requireAuth, requireRole('tutor'),
+    wrap(async (req, res) => controller.submit(req as any, res)));
+
   // ─── Admin ─────────────────────────────────────────────
 
   router.get(
-    '/pending',
+    '/admin/pending',
     requireAuth,
     requireRole('admin'),
     wrap(async (req, res) => {
@@ -47,8 +51,19 @@ export const createTutorRouter = (controller: ITutorController): Router => {
     }),
   );
 
+    // Полный профиль для админа
+  router.get('/:tutorId/admin/review', requireAuth, requireRole('admin'),
+    validate(TutorIdParamsSchema, 'params'),
+    wrap(async (req, res) => controller.getReviewProfile(req as any, res)));
+
+      // Начать проверку
+  router.post('/:tutorId/admin/start-review', requireAuth, requireRole('admin'),
+    adminTutorActionLimiter,
+    validate(TutorIdParamsSchema, 'params'),
+    wrap(async (req, res) => controller.startReview(req as any, res)));
+
   router.post(
-    '/:tutorId/approve',
+    '/:tutorId/admin/approve',
     requireAuth,
     requireRole('admin'),
     adminTutorActionLimiter,
@@ -59,7 +74,7 @@ export const createTutorRouter = (controller: ITutorController): Router => {
   );
 
   router.post(
-    '/:tutorId/reject',
+    '/:tutorId/admin/reject',
     requireAuth,
     requireRole('admin'),
     adminTutorActionLimiter,

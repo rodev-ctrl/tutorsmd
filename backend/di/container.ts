@@ -142,6 +142,8 @@ import { UpdateTutorProfileUseCase } from '../application/usecases/tutor/UpdateT
 import { GetTutorByUserIdUseCase } from '../application/usecases/tutor/GetTutorByUserIdUseCase';
 import { TutorPublicController } from '../presentation/controllers/tutor/public/TutorPublicController';
 import { GetTutorPublicListUseCase } from '../application/usecases/tutor/public/GetTutorPublicListUseCase';
+import { StartTutorReviewUseCase } from '../application/usecases/tutor/StartTutorReviewUseCase';
+import { SubmitTutorApplicationUseCase } from '../application/usecases/tutor/SubmitTutorApplicationUseCase';
 
 
 // ─── Token Infrastructure ─────────────────────────────────────
@@ -377,6 +379,9 @@ const getPendingTutorsUseCase = new GetPendingTutorsUseCase(tutorRepo);
 const approveTutorUseCase = new ApproveTutorUseCase(tutorRepo, userRepo, emailService);
 const rejectTutorUseCase = new RejectTutorUseCase(tutorRepo, userRepo, emailService);
 
+const startTutorReviewUseCase = new StartTutorReviewUseCase(tutorRepo);
+const submitTutorApplicationUseCase = new SubmitTutorApplicationUseCase(tutorRepo);
+
 const getTutorPublicProfileUseCase = new GetTutorPublicProfileUseCase(tutorRepo, userRepo);
 const getTutorPublicListUseCase = new GetTutorPublicListUseCase(tutorRepo); 
 
@@ -559,6 +564,7 @@ const tutorController = new TutorController(
   getTutorByUserIdUseCase,
   getTutorPublicProfileUseCase, updateTutorProfileUseCase,
   getPendingTutorsUseCase, approveTutorUseCase, rejectTutorUseCase,
+  submitTutorApplicationUseCase, startTutorReviewUseCase
 );
 const tutorPublicController = new TutorPublicController(
   getTutorPublicListUseCase,

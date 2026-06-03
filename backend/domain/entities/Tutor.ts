@@ -1,6 +1,6 @@
 import { DomainError } from '../errors/DomainError';
 
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+export type ApprovalStatus = 'pending' | 'submitted' | 'under_review' | 'approved' | 'rejected';
 
 interface TutorProps {
   id: string;
@@ -19,6 +19,7 @@ interface TutorProps {
   approvalStatus: ApprovalStatus;
   approvedAt: Date | null;
   approvedBy: string | null; // userId админа
+  rejectionReason: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -66,6 +67,7 @@ interface RestoreTutorProps {
   approvalStatus: ApprovalStatus;
   approvedAt: Date | null;
   approvedBy: string | null;
+  rejectionReason: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -97,6 +99,7 @@ export class Tutor {
     return this.props.approvedAt ? new Date(this.props.approvedAt) : null;
   }
   get approvedBy(): string | null { return this.props.approvedBy; }
+  get rejectionReason(): string | null { return this.props.rejectionReason; }
   get createdAt(): Date { return new Date(this.props.createdAt); }
   get updatedAt(): Date { return new Date(this.props.updatedAt); }
 
@@ -164,13 +167,37 @@ export class Tutor {
     });
   }
 
-  reject(): Tutor {
+  submit(): Tutor {
+  if (this.props.approvalStatus !== 'pending' && this.props.approvalStatus !== 'rejected') {
+    throw new DomainError('Only pending or rejected tutors can submit');
+  }
+  return new Tutor({
+    ...this.props,
+    approvalStatus: 'submitted',
+    rejectionReason: null,
+    updatedAt: new Date(),
+  });
+}
+
+startReview(): Tutor {
+  if (this.props.approvalStatus !== 'submitted') {
+    throw new DomainError('Only submitted tutors can be under review');
+  }
+  return new Tutor({
+    ...this.props,
+    approvalStatus: 'under_review',
+    updatedAt: new Date(),
+  });
+}
+
+  reject(reason?: string): Tutor {
     if (this.isRejected) {
       throw new DomainError('Tutor is already rejected');
     }
     return new Tutor({
       ...this.props,
       approvalStatus: 'rejected',
+      rejectionReason: reason ?? null,
       approvedAt: null,
       approvedBy: null,
       updatedAt: new Date(),
@@ -242,6 +269,7 @@ export class Tutor {
       ratingAvg: 0,
       ratingCount: 0,
       approvalStatus: 'pending',
+      rejectionReason: null,
       approvedAt: null,
       approvedBy: null,
       createdAt: now,
@@ -268,6 +296,7 @@ export class Tutor {
       approvalStatus: props.approvalStatus,
       approvedAt: props.approvedAt ? new Date(props.approvedAt) : null,
       approvedBy: props.approvedBy,
+      rejectionReason: null,
       createdAt: new Date(props.createdAt),
       updatedAt: new Date(props.updatedAt),
     });

@@ -7,6 +7,9 @@ import { GetPendingTutorsUseCase }   from '../../../application/usecases/tutor/G
 import { ApproveTutorUseCase }       from '../../../application/usecases/tutor/ApproveTutorUseCase';
 import { RejectTutorUseCase }        from '../../../application/usecases/tutor/RejectTutorUseCase';
 import { GetTutorByUserIdUseCase } from '../../../application/usecases/tutor/GetTutorByUserIdUseCase';
+import { SubmitTutorApplicationUseCase } from '../../../application/usecases/tutor/SubmitTutorApplicationUseCase';
+import { StartTutorReviewUseCase } from '../../../application/usecases/tutor/StartTutorReviewUseCase';
+
 
 
 import {
@@ -23,6 +26,8 @@ export class TutorController implements ITutorController {
     private readonly getPendingTutorsUseCase: GetPendingTutorsUseCase,
     private readonly approveTutorUseCase: ApproveTutorUseCase,
     private readonly rejectTutorUseCase: RejectTutorUseCase,
+    private readonly submitApplicationUseCase: SubmitTutorApplicationUseCase,
+    private readonly startReviewUseCase: StartTutorReviewUseCase
   ) {}
 
   // GET /tutor/profile - тьютор смотрит СВОЙ профиль
@@ -69,6 +74,24 @@ export class TutorController implements ITutorController {
     const tutors = await this.getPendingTutorsUseCase.execute();
     res.status(200).json({ tutors });
   }
+
+  async submit(req: Request, res: Response): Promise<void> {
+  const userId = req.user!.userId;
+  await this.submitApplicationUseCase.execute(userId);
+  res.status(200).json({ message: 'Application submitted.' });
+}
+
+async startReview(req: Request, res: Response): Promise<void> {
+  const { tutorId } = req.params as { tutorId: string };
+  await this.startReviewUseCase.execute(tutorId);
+  res.status(200).json({ message: 'Review started.' });
+}
+
+async getReviewProfile(req: Request, res: Response): Promise<void> {
+  const { tutorId } = req.params as { tutorId: string };
+  const profile = await this.getProfileUseCase.execute(tutorId);
+  res.status(200).json({ profile });
+}
 
   // POST /tutor/:tutorId/approve - только admin
   async approve(
