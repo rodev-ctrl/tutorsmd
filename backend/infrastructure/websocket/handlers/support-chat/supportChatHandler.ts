@@ -116,6 +116,14 @@ export const createSupportChatHandler = (
       data: { text?: string; files?: FileMetadataDto[] },
       callback?: Function,
     ) => {
+
+       console.log("[SOCKET] support:message", {
+      userId,
+      role: activeRole,
+      chatId: socket.data.chatId,
+      data,
+    });
+
       // Rate limit: 30 сообщений / минуту
       if (await isRateLimited(socket, 30, "support:message", 60_000)) {
         return callback?.({ ok: false, error: "Too many messages" });
@@ -123,6 +131,7 @@ export const createSupportChatHandler = (
 
       const chatId = socket.data.chatId as string | undefined;
       if (!chatId) {
+        console.error("[SOCKET] NO CHAT ID");
         return callback?.({ ok: false, error: "Join chat first" });
       }
 

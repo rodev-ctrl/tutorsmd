@@ -32,7 +32,7 @@ export default function AdminMessagesPage() {
   }, [activeChat]);
 
   useEffect(() => {
-    if (!chatId) return;
+    if (!chatId || !activeChat?.userId) return;
 
     const socket = io(import.meta.env.VITE_SOCKET_URL as string, {
       withCredentials: true,
@@ -40,7 +40,21 @@ export default function AdminMessagesPage() {
     });
     socketRef.current = socket;
 
-    socket.emit('support:join', { chatId });
+    socket.emit(
+    'support:admin_join',
+    { targetUserId: activeChat.userId },
+    (res: any) => {
+      console.log('ADMIN JOIN RESPONSE:', res);
+
+      if (!res?.ok) {
+        console.error('admin join failed', res);
+      }
+    }
+  );
+
+  socket.on('support:history', (msgs: SupportMessage[]) => {
+    setMessages(msgs);
+  });
 
     socket.on('support:message', (msg: SupportMessage) => {
       setMessages((prev) => [...prev, msg]);
@@ -48,11 +62,25 @@ export default function AdminMessagesPage() {
     });
 
     return () => { socket.disconnect(); };
-  }, [chatId]);
+  }, [chatId, activeChat?.userId]);
 
   const send = () => {
     if (!text.trim() || !chatId) return;
-    socketRef.current?.emit('support:send', { chatId, text: text.trim() });
+    socketRef.current?.emit(
+      'support:message', 
+      { text: text.trim() },
+      (res: any) => {
+      console.log('ADMIN SEND RESPONSE:', res);
+
+      if (!res?.ok) {
+        console.error('admin send failed', res);
+        return;
+      }
+
+      setText('');
+    }
+    
+    );
     setText('');
   };
 

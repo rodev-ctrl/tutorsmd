@@ -72,6 +72,8 @@ export default function SupportChatPage() {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const [isJoined, setIsJoined] = useState(false);
+
   const { t } = useTranslation('support');
 
   useEffect(() => {
@@ -82,7 +84,10 @@ export default function SupportChatPage() {
   }, [chat]);
 
   useEffect(() => {
-    if (!chat?.id) return;
+    if (!chat?.id) {
+  console.error('Chat not ready');
+  return;
+}
 
     const socket = io(import.meta.env.VITE_SOCKET_URL as string, {
       withCredentials: true,
@@ -91,7 +96,12 @@ export default function SupportChatPage() {
     socketRef.current = socket;
 
     socket.emit('support:join', {}, (res: any) => {
-      if (!res?.ok) console.error('support:join failed', res);
+      console.log('JOIN RESPONSE:', res);
+      if (res?.ok) {
+      setIsJoined(true);
+    } else {
+      console.error('support:join failed', res);
+    }
     });
 
     socket.on('support:history', (msgs: SupportMessage[]) => {
@@ -103,7 +113,7 @@ export default function SupportChatPage() {
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     });
 
-    return () => { socket.disconnect(); };
+    return () => { socket.disconnect(); setIsJoined(false); };
   }, [chat?.id]);
 
   const loadMore = useCallback(async () => {
@@ -192,7 +202,18 @@ export default function SupportChatPage() {
   };
 
   const send = async () => {
+    if (!socketRef.current?.connected) {
+  console.error('Socket not connected');
+  return;
+}
+
+if (!isJoined) {
+    console.error('Not joined yet');
+    return;
+  }
+
     if ((!text.trim() && !pendingFiles.length) || sending || !chat?.id) return;
+
     setSending(true);
 
     try {
@@ -207,12 +228,17 @@ export default function SupportChatPage() {
           files: uploadedFiles.length ? uploadedFiles : undefined,
         },
         (res: any) => {
-          if (!res?.ok) console.error('send failed', res);
-        },
-      );
+          console.log('SEND RESPONSE:', res); 
+    if (!res?.ok) {
+        console.error('send failed', res)
+        return;
+      };
 
       setText('');
       setPendingFiles([]);
+        },
+      );
+      
     } catch (err) {
       console.error('Send error:', err);
     } finally {
@@ -385,3 +411,4 @@ export default function SupportChatPage() {
     </Layout>
   );
 }
+
