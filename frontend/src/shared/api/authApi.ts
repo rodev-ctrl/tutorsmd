@@ -88,6 +88,7 @@ export const authApi = baseApi.injectEndpoints({
       onQueryStarted: async (_arg, { dispatch, queryFulfilled }) => {
         try {
           const { data } = await queryFulfilled;
+          console.log(data);
           tokenManager.set(data.accessToken);
         } catch {
           tokenManager.clear();

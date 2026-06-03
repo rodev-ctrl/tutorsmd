@@ -25,6 +25,13 @@ export const useSessionManager = () => {
     const token = tokenManager.get();
     if (!token) return;
 
+    window.addEventListener('auth:token-refreshed', () => {
+  if (socketRef.current) {
+    socketRef.current.disconnect();
+    socketRef.current = null;
+  }
+});
+
     const socket = io(import.meta.env.VITE_SOCKET_URL, {
       withCredentials: true,
       auth: { token },
