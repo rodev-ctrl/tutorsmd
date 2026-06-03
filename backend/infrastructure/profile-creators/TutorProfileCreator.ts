@@ -3,7 +3,7 @@ import { ITutorRepository } from '../../domain/repositories/ITutorRepository';
 import { Tutor } from '../../domain/entities/Tutor';
 
 export class TutorProfileCreator implements IProfileCreator {
-  readonly role = 'client' as const;
+  readonly role = 'tutor' as const;
 
   constructor(private readonly tutorRepo: ITutorRepository) {}
 
