@@ -32,7 +32,7 @@ export default function MediaCheckPage() {
     const chunks: BlobPart[] = [];
     const rec = new MediaRecorder(stream);
     rec.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-    rec.onstop = () => setAudioBlob(new Blob(chunks, { type: 'audio/wav' }));
+    rec.onstop = () => setAudioBlob(new Blob(chunks, { type: 'audio/webm' }));
     rec.start();
     setRecorder(rec);
     setIsRecording(true);
@@ -107,7 +107,7 @@ export default function MediaCheckPage() {
                     {t('media.playback')}
                   </p>
                   <audio controls className="w-full">
-                    <source src={URL.createObjectURL(audioBlob)} type="audio/wav" />
+                    <source src={URL.createObjectURL(audioBlob)} type="audio/webm" />
                   </audio>
                 </div>
               )}
