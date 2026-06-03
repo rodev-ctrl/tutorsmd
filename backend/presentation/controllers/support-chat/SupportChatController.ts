@@ -62,6 +62,16 @@ export class SupportChatController implements ISupportChatController {
     res.status(200).json(result);
   }
 
+  async getMyChat(req: Request, res: Response) {
+  const userId = req.user!.userId;
+
+  const result = await this.joinUseCase.execute({
+    userId,
+  });
+
+  res.status(200).json(result);
+}
+
   // POST /support/chat/:chatId/messages
   async sendMessage(
     req: Request<

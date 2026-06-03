@@ -26,6 +26,16 @@ export const createSupportChatRouter = (
     })
   );
 
+  // повторяет join, но надо посмотреть, мейби потом разделю
+  router.get(
+  '/chat',
+  wrap(async (req, res) => {
+    await controller.getMyChat(req, res);
+  })
+);
+
+  
+
   // ─── GET HISTORY ──────────────────────────────────────
   router.get(
     '/:chatId/history',

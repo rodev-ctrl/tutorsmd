@@ -11,7 +11,7 @@ import deLesson        from '@shared/locales/de/lesson.json';
 import deAbout         from '@shared/locales/de/about.json';
 import deDashboard     from '@shared/locales/de/dashboard.json';
 import deSettings      from '@shared/locales/de/settings.json';
-import deSupportChat   from '@shared/locales/de/support-chat.json';
+import deSupportChat   from '@shared/locales/de/support.json';
 import deHome          from '@shared/locales/de/home.json';
 import deFaq           from '@shared/locales/de/faq.json';
 import deLessons       from '@shared/locales/de/lessons.json';
@@ -28,7 +28,7 @@ import ruLesson        from '@shared/locales/ru/lesson.json';
 import ruAbout         from '@shared/locales/ru/about.json';
 import ruDashboard     from '@shared/locales/ru/dashboard.json';
 import ruSettings      from '@shared/locales/ru/settings.json';
-import ruSupportChat   from '@shared/locales/ru/support-chat.json';
+import ruSupportChat   from '@shared/locales/ru/support.json';
 import ruHome          from '@shared/locales/ru/home.json';
 import ruFaq           from '@shared/locales/ru/faq.json';
 import ruLessons       from '@shared/locales/ru/lessons.json';
@@ -45,7 +45,7 @@ import enLesson        from '@shared/locales/en/lesson.json';
 import enAbout         from '@shared/locales/en/about.json';
 import enDashboard     from '@shared/locales/en/dashboard.json';
 import enSettings      from '@shared/locales/en/settings.json';
-import enSupportChat   from '@shared/locales/en/support-chat.json';
+import enSupportChat   from '@shared/locales/en/support.json';
 import enHome          from '@shared/locales/en/home.json';
 import enFaq           from '@shared/locales/en/faq.json';
 import enLessons       from '@shared/locales/en/lessons.json';
@@ -67,7 +67,7 @@ i18n
         about:         deAbout,
         dashboard:     deDashboard,
         settings:      deSettings,
-        'support-chat': deSupportChat,
+        support:       deSupportChat,
         home:          deHome,
         faq:           deFaq,
         lessons:       deLessons,
@@ -84,7 +84,7 @@ i18n
         about:         ruAbout,
         dashboard:     ruDashboard,
         settings:      ruSettings,
-        'support-chat': ruSupportChat,
+        support:       ruSupportChat,
         home:          ruHome,
         faq:           ruFaq,
         lessons:       ruLessons,
@@ -101,7 +101,7 @@ i18n
         about:         enAbout,
         dashboard:     enDashboard,
         settings:      enSettings,
-        'support-chat': enSupportChat,
+        support:       enSupportChat,
         home:          enHome,
         faq:           enFaq,
         lessons:       enLessons,

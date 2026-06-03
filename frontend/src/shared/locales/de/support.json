@@ -1,20 +1,20 @@
 {
-  "title": "Support",
-  "subtitle": "Wir antworten in der Regel innerhalb von 24 Stunden.",
-  "emptyState": "Schreiben Sie uns — wir helfen Ihnen gerne!",
+  "title":    "Support-Chat",
+  "subtitle": "Wir antworten in der Regel innerhalb eines Werktages.",
+  "loading":  "Wird geladen...",
   "loadMore": "Ältere Nachrichten laden",
-  "loading": "Laden...",
+  "emptyState": "Noch keine Nachrichten. Schreiben Sie uns — wir helfen gerne.",
   "senderLabel": {
     "support": "Support"
   },
-  "input": {
-    "placeholder": "Nachricht...",
-    "attachTitle": "Datei anhängen",
-    "send": "↑",
-    "sending": "..."
-  },
   "file": {
-    "done": "✓",
-    "error": "✗"
+    "done":  "Hochgeladen",
+    "error": "Fehler"
+  },
+  "input": {
+    "placeholder":   "Nachricht schreiben... (Enter zum Senden)",
+    "attachTitle":   "Datei anhängen",
+    "send":          "Senden",
+    "sending":       "Wird gesendet..."
   }
 }
