@@ -1,5 +1,7 @@
 enum ApprovalStatus {
   pending
+  submitted
+  under_review
   approved
   rejected
 
@@ -42,6 +44,7 @@ model Tutor {
   approvalStatus ApprovalStatus @default(pending) @map("approval_status")
   approvedAt     DateTime?      @db.Timestamptz() @map("approved_at")
   approvedBy     String?        @db.Uuid @map("approved_by")
+  rejectionReason String?       @db.Text @map("rejection_reason")
   createdAt      DateTime       @default(now()) @db.Timestamptz() @map("created_at")
   updatedAt      DateTime       @updatedAt @db.Timestamptz() @map("updated_at")
 
