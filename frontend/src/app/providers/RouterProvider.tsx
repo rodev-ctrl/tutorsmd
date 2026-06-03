@@ -1,6 +1,7 @@
 import { lazy } from 'react';
-import { createBrowserRouter, RouterProvider as RRProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider as RRProvider, Navigate, Outlet } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
+import { useSessionManager } from '@app/hooks/useSessionManager';
 
 // AUTH
 const LoginPage              = lazy(() => import('@pages/auth/LoginPage'));
@@ -30,7 +31,15 @@ const LikedTutorsPage  = lazy(() => import('@pages/liked-tutors/LikedTutorsPage'
 // ADMIN
 const AdminMessagesPage = lazy(() => import('@pages/admin/AdminMessagesPage'));
 
+const AppShell = () => {
+  useSessionManager();
+  return <Outlet />;
+};
+
 const router = createBrowserRouter([
+  {
+    element: <AppShell />,
+    children: [
   // PUBLIC
   { path: '/',                      element: <HomePage /> },
   { path: '/tutors',                element: <TutorsPage /> },
@@ -71,6 +80,9 @@ const router = createBrowserRouter([
 
   // FALLBACK
   { path: '*', element: <Navigate to="/" replace /> },
+    ]
+  }
+ 
 ]);
 
 export const RouterProvider = () => <RRProvider router={router} />;

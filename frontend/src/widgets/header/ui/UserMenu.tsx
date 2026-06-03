@@ -93,6 +93,7 @@ export const UserMenu = () => {
     );
   }
 
+  
   const initials = profile
     ? `${profile.name[0]}${profile.surname[0]}`.toUpperCase()
     : activeRole?.[0]?.toUpperCase() ?? '?';
