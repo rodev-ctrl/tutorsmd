@@ -17,6 +17,8 @@ interface PendingFile {
   progress: number;
 }
 
+
+
 // ─── Attachment viewer ────────────────────────────────────────
 const AttachmentView = ({ attachment, isOwn }: { attachment: SupportAttachment; isOwn: boolean }) => {
   const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(attachment.name) ||
@@ -76,15 +78,21 @@ export default function SupportChatPage() {
 
   const { t } = useTranslation('support');
 
+    useEffect(() => {
+    console.log('[SupportChat Debug] chat data:', chat);
+  }, [chat]);
+  
   useEffect(() => {
-    if (chat?.messages) {
+    if (chat?.messages?.length) {
       setMessages(chat.messages);
       setHasMore(chat.messages.length >= 50);
     }
   }, [chat]);
 
   useEffect(() => {
+     console.log(chat);
     if (!chat?.id) {
+      console.log(chat);
       console.log('Chat data not ready yet, waiting...');
       return;
     }
@@ -94,10 +102,12 @@ export default function SupportChatPage() {
     const socket = io(import.meta.env.VITE_SOCKET_URL as string, {
       withCredentials: true,
       auth: { token: tokenManager.get() },
+      reconnection: true,
+      reconnectionAttempts: 5,
     });
     socketRef.current = socket;
 
-    const onConnect = () => {
+    const handleConnect = () => {
       console.log(`[SupportChat] Socket connected, joining chat ${chat.id}`);
       socket.emit('support:join', {}, (res: any) => {
         console.log('JOIN RESPONSE:', res);
@@ -109,7 +119,7 @@ export default function SupportChatPage() {
       });
     };
 
-    socket.on('connect', onConnect);
+    socket.on('connect', handleConnect);
 
     socket.on('support:history', (msgs: SupportMessage[]) => {
       setMessages(msgs);
