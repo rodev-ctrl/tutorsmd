@@ -25,13 +25,13 @@ export class SupportChatController implements ISupportChatController {
     private readonly getChatByIdUseCase: GetSupportChatByIdUseCase,
   ) {}
 
-  // Добавь в класс SupportChatController
 
 async getAllChats(req: Request, res: Response): Promise<void> {
   const requesterRole = req.user!.activeRole;
 
   if (requesterRole !== 'admin') {
     res.status(403).json({ error: 'Forbidden' });
+    return;
   }
 
   const result = await this.getAllChatsUseCase.execute(requesterRole);
