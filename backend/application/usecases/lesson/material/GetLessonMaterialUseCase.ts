@@ -64,6 +64,8 @@ export class GetLessonMaterialUseCase {
         m.fileUrl, // fileUrl хранит R2 key
         3600,      // 1 час
       );
+
+      console.log("DOWNLOAD URL", downloadUrl);
     } catch (err) {
       console.error(`[GetLessonMaterial] presign failed for key=${m.fileUrl}:`, err);
     }

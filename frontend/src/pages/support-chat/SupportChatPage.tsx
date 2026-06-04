@@ -23,6 +23,8 @@ const AttachmentView = ({ attachment, isOwn }: { attachment: SupportAttachment; 
   const isPdf = attachment.mimeType === 'application/pdf' || /\.pdf$/i.test(attachment.name);
   const url = attachment.url || attachment.key;
 
+  console.log(attachment);
+
   if (isImage) {
     return (
       <a href={url} target="_blank" rel="noopener noreferrer" className="block max-w-[200px]">

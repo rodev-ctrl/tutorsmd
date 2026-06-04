@@ -90,6 +90,8 @@ export class UploadLessonMaterialUseCase {
     let downloadUrl = '';
     try {
       downloadUrl = await this.fileStorage.getPresignedDownloadUrl(fileKey, 3600);
+
+      console.log("DOWNLOAD URL", downloadUrl);
     } catch (err) {
       console.error(`[UploadLessonMaterial] presign download failed for key=${fileKey}:`, err);
     }

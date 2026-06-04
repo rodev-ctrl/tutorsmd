@@ -182,6 +182,7 @@ export class PrismaSupportChatRepository implements ISupportChatRepository {
         let url = "";
         try {
           url = await this.fileStorage.getPresignedDownloadUrl(a.key, ATTACHMENT_URL_TTL_SECONDS);
+          console.log("DOWNLOAD URL", url);
         } catch (err) {
           console.error(`[SupportChatRepo] presign failed for key=${a.key}:`, err);
         }

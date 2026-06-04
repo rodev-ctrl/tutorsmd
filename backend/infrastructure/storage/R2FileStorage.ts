@@ -7,7 +7,7 @@ import { IUUIDGenerator } from "../../application/ports/IUUIDGenerator";
 export class R2FileStorage implements IFileStorageFactory {
   private readonly client:    S3Client;
   private readonly bucket:    string;
-  private readonly publicUrl: string;
+  // private readonly publicUrl: string;
 
   constructor(
     private readonly UUIDGenerator: IUUIDGenerator,
@@ -16,7 +16,7 @@ export class R2FileStorage implements IFileStorageFactory {
     const accessKeyId     = process.env.R2_ACCESS_KEY_ID;
     const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
     this.bucket    = process.env.R2_BUCKET_NAME ?? "tutorsmd";
-    this.publicUrl = process.env.R2_PUBLIC_URL  ?? "";
+    // this.publicUrl = process.env.R2_PUBLIC_URL  ?? "";
 
     if (!accountId || !accessKeyId || !secretAccessKey) {
       throw new Error("R2 credentials are not set in environment variables");
@@ -57,10 +57,12 @@ export class R2FileStorage implements IFileStorageFactory {
     key:             string,
     expiresInSeconds = 3600,
   ): Promise<string> {
+    /*
     // Если есть публичный URL (R2 public bucket) — presigned не нужен
     if (this.publicUrl) {
       return `${this.publicUrl}/${key}`;
     }
+      */
     return getSignedUrl(
       this.client,
       new GetObjectCommand({ Bucket: this.bucket, Key: key }),
