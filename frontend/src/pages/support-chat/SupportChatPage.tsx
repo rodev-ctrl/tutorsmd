@@ -50,6 +50,7 @@ export default function SupportChatPage() {
 
   const { data: chat, isLoading } = useGetMyChatQuery();
 
+
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [text, setText] = useState('');
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
@@ -62,7 +63,15 @@ export default function SupportChatPage() {
 
   // Debug
   useEffect(() => {
-    console.log('[SupportChat Debug] chat data:', chat);
+    console.log('[SupportChat Debug] extracted chat:', chat);
+  }, [chat]);
+
+  // Инициализация сообщений
+  useEffect(() => {
+    if (chat?.messages?.length) {
+      setMessages(chat.messages);
+      setHasMore(chat.messages.length >= 50);
+    }
   }, [chat]);
 
   // Socket connection
@@ -79,7 +88,6 @@ export default function SupportChatPage() {
       auth: { token: tokenManager.get() },
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
     });
 
     socketRef.current = socket;
@@ -88,11 +96,7 @@ export default function SupportChatPage() {
       console.log(`[SupportChat] Socket connected → joining chat ${chat.id}`);
       socket.emit('support:join', {}, (res: any) => {
         console.log('JOIN RESPONSE:', res);
-        if (res?.ok) {
-          setIsJoined(true);
-        } else {
-          console.error('support:join failed', res);
-        }
+        if (res?.ok) setIsJoined(true);
       });
     };
 
@@ -109,14 +113,12 @@ export default function SupportChatPage() {
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 80);
     });
 
-    // Initial join
     socket.emit('support:join', {}, (res: any) => {
       console.log('JOIN RESPONSE (initial):', res);
       if (res?.ok) setIsJoined(true);
     });
 
     return () => {
-      console.log(`[SupportChat] Cleaning up socket for chat ${chat.id}`);
       socket.disconnect();
       setIsJoined(false);
     };
@@ -137,9 +139,10 @@ export default function SupportChatPage() {
           setHasMore(res.hasMore);
         }
         setLoadingMore(false);
-      },
+      }
     );
   }, [chat?.id, messages, loadingMore]);
+
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);

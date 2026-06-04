@@ -32,12 +32,21 @@ export interface SupportChat {
   };
 }
 
+export interface JoinSupportChatResponse {
+  chat:     SupportChat;     
+  messages: SupportMessage[]; 
+}
+
 export const supportApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
 
     // GET /support/chat — текущий юзер получает свой чат (создаётся автоматически)
-    getMyChat: build.query<SupportChat, void>({
+       getMyChat: build.query<SupportChat, void>({
       query: () => '/support/chat',
+      transformResponse: (response: { chat: any; messages: SupportMessage[] }) => ({
+        ...response.chat,
+        messages: response.messages || [],
+      }),
       providesTags: ['Support'],
     }),
 
