@@ -36,61 +36,53 @@ export class CreateTrialLessonUseCase {
   ) {}
 
   async execute(dto: CreateTrialLessonDto): Promise<CreateTrialLessonResult> {
-    // Валидируем ID через value objects — бросит DomainError если невалидный UUID
-    const clientId = new ClientId(dto.clientId);
-    const tutorId = new TutorId(dto.tutorId);
-    const subjectId = new SubjectId(dto.subjectId);
-    const lessonId = new LessonId(this.idGenerator.generate());
+  const clientId  = new ClientId(dto.clientId);
+  const tutorId  = new TutorId(dto.tutorId);
+  const subjectId = new SubjectId(dto.subjectId);
+  const lessonId  = new LessonId(this.idGenerator.generate());
 
-    // 1. Проверяем что клиент существует
-    const client = await this.clientRepo.findById(clientId.value);
-    if (!client) throw new NotFoundError('Client not found');
-
-    // 2. Проверяем что тьютор существует и одобрен
-    const tutor = await this.tutorRepo.findById(tutorId.value);
-    if (!tutor) throw new NotFoundError('Tutor not found');
-    if (!tutor.isApproved) {
-      throw new DomainError('Tutor is not approved yet');
-    }
-
-    // 3. Проверяем уникальность trial — понятная ошибка до БД
-    const trialExists = await this.lessonRepo.existsActiveTrial(
-      clientId.value,
-      tutorId.value,
-    );
-    if (trialExists) {
-      throw new ConflictError('You already have a trial lesson with this tutor');
-    }
-
-    // 4. Проверяем конфликт слотов
-    const hasConflict = await this.lessonRepo.existsConflict(
-      tutorId.value,
-      dto.scheduledAt,
-      dto.durationMinutes ?? 60,
-    );
-    if (hasConflict) {
-      throw new ConflictError('This time slot is already taken');
-    }
-
-    // 5. Создаём Lesson entity
-    const lesson = Lesson.create({
-      id: lessonId.value,
-      clientId: clientId.value,
-      tutorId: tutorId.value,
-      subjectId: subjectId.value,
-      type: 'trial',
-      scheduledAt: dto.scheduledAt,
-      durationMinutes: dto.durationMinutes
-    });
+  // 1. Найти клиента по userId
+  const client = await this.clientRepo.findById(clientId.value);
+  if (!client) throw new NotFoundError('Client not found');
 
 
-    await this.lessonRepo.create(lesson);
+  // 2. Проверить тьютора
+  const tutor = await this.tutorRepo.findById(tutorId.value);
+  if (!tutor) throw new NotFoundError('Tutor not found');
+  if (!tutor.isApproved) throw new DomainError('Tutor is not approved yet');
 
+  // 3. Уникальность trial
+  const trialExists = await this.lessonRepo.existsActiveTrial(
+    clientId.value,
+    tutorId.value,
+  );
+  if (trialExists) throw new ConflictError('You already have a trial lesson with this tutor');
 
-    return {
-      lessonId: lesson.id,
-      scheduledAt: lesson.scheduledAt,
-      status: lesson.status,
-    };
-  }
+  // 4. Конфликт слотов
+  const hasConflict = await this.lessonRepo.existsConflict(
+    tutorId.value,
+    dto.scheduledAt,
+    dto.durationMinutes ?? 60,
+  );
+  if (hasConflict) throw new ConflictError('This time slot is already taken');
+
+  // 5. Создать урок
+  const lesson = Lesson.create({
+    id:              lessonId.value,
+    clientId:        clientId.value,
+    tutorId:         tutorId.value,
+    subjectId:       subjectId.value,
+    type:            'trial',
+    scheduledAt:     dto.scheduledAt,
+    durationMinutes: dto.durationMinutes,
+  });
+
+  await this.lessonRepo.create(lesson);
+
+  return {
+    lessonId:    lesson.id,
+    scheduledAt: lesson.scheduledAt,
+    status:      lesson.status,
+  };
+}
 }

@@ -4,6 +4,7 @@ import { Role } from '../entities/User';
 export interface AccessTokenPayload {
   userId: string;
   activeRole: Role;
+  profileId: string;
 }
 
 export class AccessToken {
@@ -21,5 +22,6 @@ export class AccessToken {
 
   get userId(): string { return this._payload.userId; }
   get activeRole(): Role { return this._payload.activeRole; }
+  get profileId(): string { return this._payload.profileId; }
   get payload(): AccessTokenPayload { return this._payload; }
 }

@@ -246,6 +246,8 @@ const loginUseCase = new LoginUseCase(
   passwordHasher,
   accessTokenFactory,
   refreshTokenFactory,
+  clientRepo,
+  tutorRepo,
 );
 
 const logoutUseCase = new LogoutUseCase(
@@ -256,6 +258,8 @@ const logoutUseCase = new LogoutUseCase(
 const switchRoleUseCase = new SwitchRoleUseCase(
   userRepo,
   accessTokenFactory,
+  clientRepo,
+  tutorRepo,
 );
 
 // ─── Tokens / Sessions ────────────────────────────────────────
@@ -264,6 +268,8 @@ const refreshTokenUseCase = new RefreshTokenUseCase(
   refreshTokenRepo,
   accessTokenFactory,
   refreshTokenFactory,
+  clientRepo,
+  tutorRepo,
 );
 
 const getActiveSessionsUseCase = new GetActiveSessionsUseCase(refreshTokenRepo, refreshTokenFactory);

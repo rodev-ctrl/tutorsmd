@@ -1,9 +1,10 @@
 import { IUserRepository } from '../../../../domain/repositories/IUserRepository';
 import { IRefreshTokenRepository } from '../../../../domain/repositories/IRefreshTokenRepository';
+import { IClientRepository } from '../../../../domain/repositories/IClientRepository';
+import { ITutorRepository } from '../../../../domain/repositories/ITutorRepository';
 import { IAccessTokenFactory } from '../../../ports/token/IAccessTokenFactory';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { Role } from '../../../../domain/entities/User';
-import { RefreshToken } from '../../../../domain/value-objects/RefreshToken';
 import { AccessToken } from '../../../../domain/value-objects/AccessToken';
 import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
 
@@ -18,42 +19,34 @@ export class RefreshTokenUseCase {
     private readonly refreshTokenRepo: IRefreshTokenRepository,
     private readonly accessTokenFactory: IAccessTokenFactory,
     private readonly refreshTokenFactory: IRefreshTokenFactory,
+    private readonly clientRepo: IClientRepository,
+    private readonly tutorRepo: ITutorRepository,
   ) {}
 
   async execute(rawToken: string, activeRole?: Role): Promise<RefreshResult> {
-    // 1. Хэшируем и ищем в БД
     const incomingToken = this.refreshTokenFactory.fromRaw(rawToken);
     const record = await this.refreshTokenRepo.findByTokenHash(incomingToken.hash);
 
     if (!record) throw new DomainError('Session not found');
 
     if (record.revokedAt) {
-      // Это признак кражи токена — кто-то использует старый токен
-      // Разлогиниваем ВСЕ сессии этого юзера
       await this.refreshTokenRepo.revokeAllByUserId(record.userId);
       throw new DomainError('Token reuse detected. All sessions revoked.');
     }
     if (record.expiresAt < new Date()) throw new DomainError('Session expired');
-    
 
-    // 2. Найти юзера
     const user = await this.userRepo.findById(record.userId);
     if (!user) throw new DomainError('User not found');
 
     const resolvedRole: Role = activeRole ?? user.roles[0];
-    
-    // 3. Проверить роль
+
     if (!user.hasRole(resolvedRole)) {
       throw new DomainError(`User does not have role: ${resolvedRole}`);
     }
 
-    // 4. Rotation — отозвать старый
     await this.refreshTokenRepo.revoke(incomingToken.hash);
-    
-  
-    // 5. Создать новый refreshToken
-    const newToken = this.refreshTokenFactory.generate();
 
+    const newToken = this.refreshTokenFactory.generate();
     await this.refreshTokenRepo.create({
       userId: user.id,
       tokenHash: newToken.hash,
@@ -61,13 +54,27 @@ export class RefreshTokenUseCase {
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
-    // 5. Новый access token
-    const accessTokenV0 = AccessToken.create({ userId: user.id, activeRole: resolvedRole });
-     const accessToken = this.accessTokenFactory.generate(accessTokenV0);
+    const profileId = await this.resolveProfileId(user.id, resolvedRole);
 
-    return {
-      accessToken,
-      refreshToken: newToken.raw,
-    };
+    const accessTokenV0 = AccessToken.create({
+      userId: user.id,
+      activeRole: resolvedRole,
+      profileId,
+    });
+    const accessToken = this.accessTokenFactory.generate(accessTokenV0);
+
+    return { accessToken, refreshToken: newToken.raw };
+  }
+
+  private async resolveProfileId(userId: string, role: string): Promise<string> {
+    if (role === 'client') {
+      const client = await this.clientRepo.findByUserId(userId);
+      return client?.id ?? userId;
+    }
+    if (role === 'tutor') {
+      const tutor = await this.tutorRepo.findByUserId(userId);
+      return tutor?.id ?? userId;
+    }
+    return userId;
   }
 }

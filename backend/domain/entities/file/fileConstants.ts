@@ -16,7 +16,7 @@ export const ALLOWED_MIME_TYPES = new Set([
 
 export const SIZE_LIMITS: Record<FileNamespace, number> = {
   avatars:             2  * 1024 * 1024,
-  "support/chats":     5  * 1024 * 1024,
+  "support/chats":     25  * 1024 * 1024,
   "lessons":           50 * 1024 * 1024,
   "lessons/materials": 20 * 1024 * 1024,
 };

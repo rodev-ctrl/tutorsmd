@@ -300,7 +300,7 @@ export const createLessonHandler = (
       if (size > SIZE_LIMITS["lessons"]) {
         return callback?.({
           ok: false,
-          error: `File too large. Max ${SIZE_LIMITS["lessons"] / 1024 / 1024} MB`,
+          code: 'FILE_TOO_LARGE',
         });
       }
  
