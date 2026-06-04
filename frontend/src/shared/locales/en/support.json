@@ -1,20 +1,33 @@
 {
-  "title":    "Support Chat",
+  "title": "Support Chat",
   "subtitle": "We usually reply within one business day.",
-  "loading":  "Loading...",
-  "loadMore": "Load earlier messages",
-  "emptyState": "No messages yet. Write to us — we're happy to help.",
+  "loading": "Loading...",
+  "loadMore": "Load older messages",
+  "emptyState": "No messages yet. Write to us - we're happy to help.",
   "senderLabel": {
     "support": "Support"
   },
   "file": {
-    "done":  "Uploaded",
+    "done": "Uploaded",
     "error": "Error"
   },
   "input": {
-    "placeholder":   "Write a message... (Enter to send)",
-    "attachTitle":   "Attach file",
-    "send":          "Send",
-    "sending":       "Sending..."
+    "placeholder": "Write a message...",
+    "attachTitle": "Attach file",
+    "send": "Send",
+    "sending": "Sending..."
+  },
+  "adminSupport": {
+    "title": "Support Messages",
+    "selectChat": "Select chat",
+    "empty": "No active chats",
+    "noMessages": "No messages yet",
+    "replyPlaceholder": "Write a reply...",
+    "send": "Send",
+    "back": "Back",
+    "chatList": "Chats",
+    "loading": "Loading...",
+    "user": "User",
+    "support": "Support"
   }
 }

@@ -1,20 +1,33 @@
 {
-  "title":    "Support-Chat",
+  "title": "Support-Chat",
   "subtitle": "Wir antworten in der Regel innerhalb eines Werktages.",
-  "loading":  "Wird geladen...",
+  "loading": "Wird geladen...",
   "loadMore": "Ältere Nachrichten laden",
-  "emptyState": "Noch keine Nachrichten. Schreiben Sie uns — wir helfen gerne.",
+  "emptyState": "Noch keine Nachrichten. Schreiben Sie uns - wir helfen gerne.",
   "senderLabel": {
     "support": "Support"
   },
   "file": {
-    "done":  "Hochgeladen",
+    "done": "Hochgeladen",
     "error": "Fehler"
   },
   "input": {
-    "placeholder":   "Nachricht schreiben... (Enter zum Senden)",
-    "attachTitle":   "Datei anhängen",
-    "send":          "Senden",
-    "sending":       "Wird gesendet..."
+    "placeholder": "Nachricht schreiben...",
+    "attachTitle": "Datei anhängen",
+    "send": "Senden",
+    "sending": "Wird gesendet..."
+  },
+  "adminSupport": {
+    "title": "Support-Nachrichten",
+    "selectChat": "Chat auswählen",
+    "empty": "Keine aktiven Chats",
+    "noMessages": "Noch keine Nachrichten",
+    "replyPlaceholder": "Antwort schreiben...",
+    "send": "Senden",
+    "back": "Zurück",
+    "chatList": "Chats",
+    "loading": "Wird geladen...",
+    "user": "Benutzer",
+    "support": "Support"
   }
 }
