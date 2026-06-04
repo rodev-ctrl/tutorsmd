@@ -8,14 +8,14 @@ export interface SubjectConfig {
 
 export const SUBJECTS: SubjectConfig[] = [
   {
-    id:     '11111111-1111-1111-1111-111111111111',
+    id:     'c9b8b0af-7217-4b17-b529-f49c7024e83f',
     nameDe: 'Mathematik',
     nameRu: 'Математика',
     nameEn: 'Mathematics',
     icon:   '📐',
   },
   {
-    id:     '22222222-2222-2222-2222-222222222222',
+    id:     '424323dc-8794-4a6c-b683-a0c854b4eb96',
     nameDe: 'Deutsch',
     nameRu: 'Немецкий',
     nameEn: 'German',
