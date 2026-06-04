@@ -392,7 +392,7 @@ const rejectTutorUseCase = new RejectTutorUseCase(tutorRepo, userRepo, emailServ
 const startTutorReviewUseCase = new StartTutorReviewUseCase(tutorRepo);
 const submitTutorApplicationUseCase = new SubmitTutorApplicationUseCase(tutorRepo);
 
-const getTutorPublicProfileUseCase = new GetTutorPublicProfileUseCase(tutorRepo, userRepo);
+const getTutorPublicProfileUseCase = new GetTutorPublicProfileUseCase(tutorRepo, userRepo, prisma);
 const getTutorPublicListUseCase = new GetTutorPublicListUseCase(tutorRepo); 
 
 const updateTutorProfileUseCase = new UpdateTutorProfileUseCase(tutorRepo);

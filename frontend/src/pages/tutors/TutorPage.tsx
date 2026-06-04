@@ -20,6 +20,7 @@ export default function TutorPage() {
   const { data: tutor, isLoading } = useGetTutorByIdQuery(tutorId ?? '', { skip: !tutorId });
   const { data: slotsData }        = useGetTutorSlotsQuery(tutorId ?? '', { skip: !tutorId });
 
+
   if (isLoading) return <Layout><Spinner /></Layout>;
   if (!tutor) return (
     <Layout>
@@ -118,7 +119,7 @@ export default function TutorPage() {
           <p className="text-blue-200 text-sm mb-5">{t('cta.subtitle')}</p>
 
           {isAuthenticated && activeRole === 'client' ? (
-            <BookTrialButton tutorId={tutor.id} />
+            <BookTrialButton tutorId={tutor.id} subjects={tutor.subjects ?? []} />
           ) : !isAuthenticated ? (
             <Link
               to="/login"

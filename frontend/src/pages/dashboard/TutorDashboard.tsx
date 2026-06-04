@@ -81,6 +81,23 @@ export const TutorDashboard = () => {
             <QuickAction to="/settings/media" icon="🎥" label={t('tutor.quickActions.camera')} />
           </div>
 
+          {/* Всегда показываем ссылку на заполнение профиля */}
+<div className="bg-white rounded-3xl border border-slate-200 p-5 flex items-center justify-between">
+  <div>
+    <p className="text-sm font-semibold text-slate-900">Lehrerprofil ausfüllen</p>
+    <p className="text-xs text-slate-500 mt-0.5">
+      Fächer, Beschreibung, Stundensatz
+    </p>
+  </div>
+  <Link
+    to="/settings?tab=tutor-profile"
+    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium
+      px-4 py-2 rounded-xl transition"
+  >
+    Bearbeiten →
+  </Link>
+</div>
+
           {isLoading ? (
             <Spinner />
           ) : (

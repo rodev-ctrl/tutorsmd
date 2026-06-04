@@ -11,6 +11,7 @@ import { ChangePasswordForm } from './sections/change-password/ChangePasswordFor
 import { ChangeEmailForm }    from './sections/change-email/ChangeEmailForm';
 import { SessionsList }       from './sections/sessions-list/SessionsList';
 import { useTranslation }     from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 
 type TabKey = 'profile' | 'tutor-profile' | 'become-tutor' | 'security' | 'sessions';
 
@@ -41,7 +42,11 @@ export default function SettingsPage() {
     { key: 'sessions', labelKey: 'sessions' },
   ];
 
-  const [tab, setTab] = useState<TabKey>('profile');
+
+
+  const [searchParams] = useSearchParams();
+const initialTab = (searchParams.get('tab') as TabKey) ?? 'profile';
+const [tab, setTab] = useState<TabKey>(initialTab);
 
   return (
     <Layout>

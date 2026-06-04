@@ -1,3 +1,5 @@
+import { TutorSubject } from "@shared/api/tutor/tutorApi";
+
 export type ApprovalStatus = 'pending' | 'submitted' | 'under_review' | 'approved' | 'rejected';
 
 export interface TutorPublic {
@@ -19,4 +21,5 @@ export interface TutorPublic {
   fulldescribeRu: string | null;
   approvalStatus: ApprovalStatus;
   rejectionReason: string | null;
+  subjects: TutorSubject[];
 }
