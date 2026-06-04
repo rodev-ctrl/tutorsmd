@@ -120,6 +120,15 @@ startReview: build.mutation<void, string>({
       invalidatesTags: ['Tutor'],
     }),
 
+    updateTutorSubjects: build.mutation<void, string[]>({
+  query: (subjectIds) => ({
+    url: '/tutor/subjects',
+    method: 'PUT',
+    body: { subjectIds },
+  }),
+  invalidatesTags: ['Tutor'],
+}),
+
   }),
 });
 
