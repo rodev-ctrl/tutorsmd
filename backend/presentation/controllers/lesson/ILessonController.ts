@@ -19,6 +19,7 @@ export interface ILessonController {
 
   // Get
   getLesson(req: Request<LessonIdParams>, res: Response): Promise<void>;
+  getUserLessons(req: Request, res: Response): Promise<void>;
 
   // Tutor actions
   confirm(req: Request<LessonIdParams>, res: Response): Promise<void>;

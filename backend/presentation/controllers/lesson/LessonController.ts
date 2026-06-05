@@ -19,6 +19,8 @@ import { DeleteLessonMaterialUseCase }      from '../../../application/usecases/
 import { CreateRegularScheduleUseCase }     from '../../../application/usecases/lesson/regular/CreateRegularScheduleUseCase';
 import { CancelRegularScheduleUseCase }     from '../../../application/usecases/lesson/regular/CancelRegularScheduleUseCase';
 import { CancelSingleLessonUseCase }        from '../../../application/usecases/lesson/regular/CancelSingleLessonUseCase';
+import { GetUserLessonsUseCase } from '../../../application/usecases/lesson/GetUserLessonsUseCase';
+
 import {
   CreateTrialLessonBody,
   CreateRegularScheduleBody,
@@ -31,6 +33,7 @@ import {
   ScheduleIdParams,
   MaterialIdParams,
 } from './lesson.schema';
+
 
 export class LessonController implements ILessonController {
   constructor(
@@ -53,6 +56,7 @@ export class LessonController implements ILessonController {
     private readonly createRegularScheduleUseCase: CreateRegularScheduleUseCase,
     private readonly cancelRegularScheduleUseCase: CancelRegularScheduleUseCase,
     private readonly cancelSingleLessonUseCase:    CancelSingleLessonUseCase,
+    private readonly getUserLessonsUseCase: GetUserLessonsUseCase,
   ) {}
 
 
@@ -85,6 +89,14 @@ export class LessonController implements ILessonController {
     const lesson = await this.getLessonUseCase.execute({ lessonId, profileId });
     res.status(200).json(lesson);
   }
+
+  async getUserLessons(req: Request, res: Response): Promise<void> {
+  const profileId = req.user!.profileId;
+  const role      = req.user!.activeRole as 'client' | 'tutor' | 'admin';
+
+  const lessons = await this.getUserLessonsUseCase.execute({ profileId, role });
+  res.status(200).json({ lessons });
+}
 
 
   async confirm(

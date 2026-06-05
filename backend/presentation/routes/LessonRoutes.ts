@@ -52,6 +52,13 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     (req, res) => controller.cancelRegularSchedule(req as any, res),
   );
 
+  // GET /lessons — список уроков текущего пользователя
+  router.get(
+    '/',
+    requireAuth,
+    (req, res) => controller.getUserLessons(req as any, res),
+  );
+
   // ─── Get lesson ───────────────────────────────────────────────
   router.get(
     '/:lessonId',
