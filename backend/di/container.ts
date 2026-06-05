@@ -148,6 +148,7 @@ import { GetAllSupportChatsUseCase } from '../application/usecases/support-chat/
 import { GetSupportChatByIdUseCase } from '../application/usecases/support-chat/GetSupportChatByIdUseCase';
 import { GetTutorOwnProfileUseCase } from '../application/usecases/tutor/GetTutorOwnProfileUseCase';
 import { UpdateTutorSubjectsUseCase } from '../application/usecases/tutor/UpdateTutorSubjectsUseCase';
+import { GetUserLessonsUseCase } from '../application/usecases/lesson/GetUserLessonsUseCase';
 
 
 // ─── Token Infrastructure ─────────────────────────────────────
@@ -379,6 +380,8 @@ const startLessonUseCase = new StartLessonUseCase(
   idGenerator
 );
 
+const getUserLessonsUseCase = new GetUserLessonsUseCase(lessonRepo);
+
 
 // PERSON
 const getProfileUseCase = new GetUserProfileUseCase(userRepo, clientRepo, tutorRepo);
@@ -536,7 +539,8 @@ const lessonController = new LessonController(
   deleteMaterialUseCase, 
   createRegularScheduleUseCase, 
   cancelRegularScheduleUseCase, 
-  cancelSingleLessonUseCase
+  cancelSingleLessonUseCase,
+  getUserLessonsUseCase,
 );
 const availableSlotController = new AvailableSlotController(
   createSlotUseCase, 
