@@ -24,9 +24,10 @@ export const LessonChat = ({ lessonId }: { lessonId: string }) => {
   const { socket, joined } = useLessonSocket();
 
   useEffect(() => {
-   
+   console.log('[Chat] effect, joined:', joined);
     if(!joined) return;
 
+    console.log('[Chat] emitting lesson:chat:join for', lessonId);
     socket.emit('lesson:chat:join', { lessonId });
 
     socket.on('lesson:chat:history', (history: ChatMessage[]) => {

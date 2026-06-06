@@ -38,7 +38,9 @@ export const LessonSocketProvider = ({
   });
 
   s.on('connect', () => {
+    console.log('[Socket] Connected, emitting joinLesson for', lessonId);
     s.emit('joinLesson', { lessonId }, (response: { ok: boolean; error?: string }) => {
+        console.log('[Socket] joinLesson response:', response);
       if (!response.ok) {
         setError(response.error ?? 'Failed to join lesson');
         console.log(error);
