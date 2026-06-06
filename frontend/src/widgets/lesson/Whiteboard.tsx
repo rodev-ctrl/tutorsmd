@@ -30,7 +30,7 @@ export const Whiteboard = ({ lessonId }: { lessonId: string }) => {
   const snapshot  = useRef<ImageData | null>(null);
   const [toolState, dispatch] = useReducer(toolReducer, initialTool);
 
-  const socket = useLessonSocket();
+  const { socket, joined } = useLessonSocket();
 
   const getCtx = () => canvasRef.current?.getContext('2d') ?? null;
   const getPos = (e: React.PointerEvent) => {
@@ -92,6 +92,9 @@ export const Whiteboard = ({ lessonId }: { lessonId: string }) => {
   }, [lessonId]);
 
   useEffect(() => {
+
+    if (!joined) return;
+
     socket.emit('board:join', { lessonId });
 
     socket.on('board:fullState', (state: Record<number, BoardActionFromServer[]>) => {
@@ -124,7 +127,7 @@ export const Whiteboard = ({ lessonId }: { lessonId: string }) => {
 
     socket.on('board:error', (err: { code: string }) => console.warn('Board:', err.code));
 
-  }, [lessonId, userId, applyAction, redrawFromActions, socket]);
+  }, [lessonId, joined, userId, applyAction, redrawFromActions, socket]);
 
   const onPointerDown = (e: React.PointerEvent) => {
     drawing.current = true; const pos = getPos(e);

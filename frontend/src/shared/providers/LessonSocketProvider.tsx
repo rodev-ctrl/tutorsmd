@@ -14,17 +14,21 @@ interface Props {
   children: React.ReactNode;
 }
 
+interface ContextValue {
+  socket: Socket;
+  joined: boolean;
+}
+
 const LessonSocketContext =
-  createContext<Socket | null>(null);
+  createContext<ContextValue | null>(null);
 
 export const LessonSocketProvider = ({
   lessonId,
   children,
 }: Props) => {
-  const [socket, setSocket] =
-    useState<Socket | null>(null);
-
-  const [error, setError] = useState<string | undefined | null>("");
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [joined, setJoined] = useState(false);
+  const [error, setError]   = useState<string | null>(null);
  
 
   useEffect(() => {
@@ -38,37 +42,43 @@ export const LessonSocketProvider = ({
       if (!response.ok) {
         setError(response.error ?? 'Failed to join lesson');
         console.log(error);
-      } 
+      } else {
+        setJoined(true);
+      }
     });
   });
+
+   // При реконнекте повторно join
+    s.on('reconnect', () => {
+      setJoined(false);
+      s.emit('joinLesson', { lessonId }, (response: { ok: boolean; error?: string }) => {
+        if (response?.ok) setJoined(true);
+      });
+    });
 
   setSocket(s);
 
   return () => {
     s.emit('lesson:leave', { lessonId });
     s.disconnect();
+    setJoined(false);
   };
 }, [lessonId]);
 
   if (!socket) return null;
 
   return (
-    <LessonSocketContext.Provider
-      value={socket}
-    >
+    <LessonSocketContext.Provider value={{socket, joined}}>
       {children}
     </LessonSocketContext.Provider>
   );
 };
 
 export const useLessonSocket = () => {
-  const socket =
-    useContext(LessonSocketContext);
+  const socket = useContext(LessonSocketContext);
 
   if (!socket) {
-    throw new Error(
-      'LessonSocketProvider missing',
-    );
+    throw new Error('LessonSocketProvider missing');
   }
 
   return socket;
