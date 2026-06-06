@@ -44,6 +44,7 @@ export const LessonSocketProvider = ({
       if (!response.ok) {
         setError(response.error ?? 'Failed to join lesson');
         console.log(response.error);
+        console.log(error);
       } else {
         setJoined(true);
       }
