@@ -35,7 +35,8 @@ export class BoardSnapshotService {
   async loadSnapshot(lessonId: string): Promise<Record<number, any[]> | null | unknown> {
     try {
       const key = `board-snapshots/${lessonId}/snapshot.json`;
-      const url = await this.fileStorage.getPresignedDownloadUrl(key, 300);
+      const TTL = 60 * 60 * 6;
+      const url = await this.fileStorage.getPresignedDownloadUrl(key, TTL);
       const res = await fetch(url);
       if (!res.ok) return null;
       return await res.json();

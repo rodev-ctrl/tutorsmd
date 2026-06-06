@@ -21,10 +21,11 @@ export const LessonChat = ({ lessonId }: { lessonId: string }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText]         = useState('');
 
-  const socket = useLessonSocket();
+  const { socket, joined } = useLessonSocket();
 
   useEffect(() => {
    
+    if(!joined) return;
 
     socket.emit('lesson:chat:join', { lessonId });
 
@@ -39,7 +40,7 @@ export const LessonChat = ({ lessonId }: { lessonId: string }) => {
     });
 
     
-  }, [lessonId, socket]);
+  }, [lessonId, joined, socket]);
 
   const send = () => {
     if (!text.trim()) return;

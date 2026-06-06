@@ -32,11 +32,12 @@ export const VideoRoom = ({
   const [participants, setParticipants] = useState<string[]>([]);
   const [tutorPresent, setTutorPresent] = useState(false);
 
-  const socket = useLessonSocket();
+  const { socket, joined } = useLessonSocket();
 
   // ───────────── MEDIA ─────────────
   useEffect(() => {
     if (!canJoin) return;
+
     let stream: MediaStream;
 
     navigator.mediaDevices
@@ -56,7 +57,7 @@ export const VideoRoom = ({
 
   // ───────────── SOCKET + WEBRTC ─────────────
   useEffect(() => {
-    if (!canJoin || !localStream || !userId) return;
+    if (!canJoin || !joined || !localStream || !userId) return;
 
     socket.on('updateParticipants', async (list: string[]) => {
       setParticipants(list);
@@ -109,7 +110,7 @@ export const VideoRoom = ({
       peersRef.current.clear();
       setRemoteStreams(new Map());
     };
-  }, [canJoin, localStream, userId, lessonId]);
+  }, [canJoin, joined, localStream, userId, lessonId]);
 
   // ───────────── PEER ─────────────
   const createPeerConnection = (peerId: string, socket: Socket) => {
