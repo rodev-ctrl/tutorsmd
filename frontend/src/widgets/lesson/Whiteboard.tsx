@@ -178,8 +178,10 @@ export const Whiteboard = ({ lessonId }: { lessonId: string }) => {
     const x = (e.clientX - rect.left) * (canvas.width / rect.width);
     const y = (e.clientY - rect.top)  * (canvas.height / rect.height);
     const text = window.prompt('Text eingeben:');
+    console.log('[Board] text input:', text);
     if (!text) return;
     const action: DrawAction = { type: 'text', data: { text, x, y, color: toolState.color, fontSize: 18 } };
+     console.log('[Board] emitting text action:', action);
     applyAction(action); history.current.push(action); redoStack.current = []; emitAction(action);
   };
 
@@ -196,6 +198,8 @@ export const Whiteboard = ({ lessonId }: { lessonId: string }) => {
   const redo = () => {
     if (!redoStack.current.length) return;
     const next = redoStack.current.pop()!;
+    history.current.push(next);
+  applyAction(next);
     emitAction(next); // придёт обратно через board:action и попадёт в history
   };
 
