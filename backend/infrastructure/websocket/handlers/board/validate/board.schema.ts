@@ -104,7 +104,23 @@ export type ParseResult =
   | { success: false; error: string };
 
 export const parseIncomingAction = (raw: unknown): ParseResult => {
-  const base = baseSchema.safeParse(raw);
+
+    // Разворачиваю action на верхний уровень перед валидацией
+  const unwrapped = (() => {
+    if (
+      raw &&
+      typeof raw === 'object' &&
+      'action' in raw &&
+      raw.action &&
+      typeof raw.action === 'object'
+    ) {
+      const { action, ...rest } = raw as any;
+      return { ...rest, type: action.type, data: action.data };
+    }
+    return raw;
+  })();
+
+  const base = baseSchema.safeParse(unwrapped);
   if (!base.success) {
     return { success: false, error: base.error.issues[0]?.message ?? "Invalid structure" };
   }
