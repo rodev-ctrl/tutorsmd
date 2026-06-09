@@ -72,10 +72,10 @@ import { SendSupportChatMessageUseCase } from '../application/usecases/support-c
 // --- Use Cases: Lesson ---------------------------------------------------------------------------------------------
 import { CompleteLessonUseCase } from '../application/usecases/lesson/CompleteLessonUseCase';
 import { GetSupportChatHistoryUseCase } from '../application/usecases/support-chat/GetSupportChatHistoryUseCase';
-import { AutoCompleteLessonsJob } from '../infrastructure/queue/jobs/AutoCompleteLessonsJob';
-import { AutoCancelPendingJob } from '../infrastructure/queue/jobs/AutoCancelPendingJob';
+import { AutoCompleteLessonsJob } from '../infrastructure/queue/jobs/lesson/AutoCompleteLessonsJob';
+import { AutoCancelPendingJob } from '../infrastructure/queue/jobs/lesson/AutoCancelPendingJob';
 import { AutoExpireRescheduleJob } from '../infrastructure/queue/jobs/AutoExpireRescheduleJob';
-import { SendLessonRemindersJob } from '../infrastructure/queue/jobs/SendLessonRemindersJob';
+import { SendLessonRemindersJob } from '../infrastructure/queue/jobs/lesson/SendLessonRemindersJob';
 import { GenerateNextRegularLessonUseCase } from '../application/usecases/lesson/regular/GenerateNextRegularScheduleUseCase';
 import { PrismaRegularScheduleRepository } from '../infrastructure/database/repositories/lesson/PrismaRegularScheduleRepository';
 
@@ -150,6 +150,9 @@ import { GetTutorOwnProfileUseCase } from '../application/usecases/tutor/GetTuto
 import { UpdateTutorSubjectsUseCase } from '../application/usecases/tutor/UpdateTutorSubjectsUseCase';
 import { GetUserLessonsUseCase } from '../application/usecases/lesson/GetUserLessonsUseCase';
 import { BoardSnapshotService } from '../infrastructure/websocket/handlers/board/BoardSnapshotService';
+import { GenerateLessonSummaryJob } from '../infrastructure/queue/jobs/lesson/GenerateLessonSummaryJob';
+import { ClaudeSummaryService } from '../infrastructure/ai/ClaudeSummaryService';
+import { anthropic } from '../infrastructure/ai/AnthropicClient';
 
 
 // ─── Token Infrastructure ─────────────────────────────────────
@@ -274,6 +277,7 @@ const refreshTokenUseCase = new RefreshTokenUseCase(
   refreshTokenFactory,
   clientRepo,
   tutorRepo,
+  unitOfWork
 );
 
 const getActiveSessionsUseCase = new GetActiveSessionsUseCase(refreshTokenRepo, refreshTokenFactory);
@@ -285,6 +289,7 @@ const changePasswordUseCase = new ChangePasswordUseCase(
   userRepo,
   refreshTokenRepo,
   passwordHasher,
+  unitOfWork
 );
 
 const forgotPasswordUseCase = new ForgotPasswordUseCase(
@@ -300,6 +305,7 @@ const resetPasswordUseCase = new ResetPasswordUseCase(
   passwordResetRepo,
   passwordHasher,
   secureTokenFactory,
+  unitOfWork
 );
 
 // ─── Email Change ─────────────────────────────────────────────
@@ -315,6 +321,7 @@ const confirmEmailChangeUseCase = new ConfirmEmailChangeUseCase(
   userRepo,
   emailChangeRepo,
   secureTokenFactory,
+  unitOfWork
 );
 
 
@@ -493,6 +500,9 @@ const autoCompleteLesson = new AutoCompleteLessonsJob(
 const autoCancelPending    = new AutoCancelPendingJob(prisma);
 const autoExpireReschedule = new AutoExpireRescheduleJob(prisma);
 const sendLessonReminders  = new SendLessonRemindersJob(prisma, emailService);
+
+const claudeSummaryService = new ClaudeSummaryService(anthropic);
+const generateLessonSummary = new GenerateLessonSummaryJob(prisma, claudeSummaryService);
 //////////////////////////////////////////////////
 
 

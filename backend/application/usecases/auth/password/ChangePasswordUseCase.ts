@@ -5,12 +5,14 @@ import { IPasswordHasher } from '../../../ports/IPasswordHasher';
 import { Password } from '../../../../domain/value-objects/Password';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { NotFoundError } from '../../../../domain/errors/NotFoundError';
+import { IUnitOfWork } from '../../../ports/IUnitOfWork';
 
 export class ChangePasswordUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly refreshTokenRepo: IRefreshTokenRepository,
     private readonly passwordHasher: IPasswordHasher,
+    private readonly unitOfWork: IUnitOfWork,
   ) {}
 
   async execute(userId: string, oldPassword: string, newPassword: string): Promise<void> {
@@ -28,9 +30,12 @@ export class ChangePasswordUseCase {
 
     const newHash = await this.passwordHasher.hash(newPassword);
     const updatedUser = user.setHashedPassword(newHash);
-    await this.userRepo.save(updatedUser);
 
-    // Разлогинить со всех устройств — пароль изменился
-    await this.refreshTokenRepo.revokeAllByUserId(userId);
+    await this.unitOfWork.run(async () => {
+      await this.userRepo.save(updatedUser);
+
+      // Разлогинить со всех устройств — пароль изменился
+      await this.refreshTokenRepo.revokeAllByUserId(userId);
+    });
   }
 }

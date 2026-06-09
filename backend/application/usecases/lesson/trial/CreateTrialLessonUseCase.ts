@@ -79,7 +79,14 @@ export class CreateTrialLessonUseCase {
 
   // сейчас заглушка сразу "confirmed", но на будущее надо полумать как синхронизировать статусы "pending", "confirmed" и AvailableSlot
   const confirmed = lesson.confirm();
-  await this.lessonRepo.create(confirmed);
+  try {
+    await this.lessonRepo.create(confirmed);
+  } catch (err: any) {
+    if (err?.code === 'P2002') {
+      throw new ConflictError('Lesson slot conflict detected');
+    }
+    throw err;
+  }
 
   return {
     lessonId:    confirmed.id,

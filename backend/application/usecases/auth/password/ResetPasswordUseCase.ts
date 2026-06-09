@@ -6,6 +6,7 @@ import { Password } from '../../../../domain/value-objects/Password';
 import { DomainError } from '../../../../domain/errors/DomainError';
 import { NotFoundError } from '../../../../domain/errors/NotFoundError';
 import { IPasswordResetTokenFactory } from '../../../ports/email/IPasswordResetTokenFactory';
+import { IUnitOfWork } from '../../../ports/IUnitOfWork';
 
 export class ResetPasswordUseCase {
   constructor(
@@ -14,6 +15,7 @@ export class ResetPasswordUseCase {
     private readonly passwordResetRepo: IPasswordResetRepository,
     private readonly passwordHasher: IPasswordHasher,
     private readonly tokenFactory: IPasswordResetTokenFactory,
+    private readonly unitOfWork: IUnitOfWork,
   ) {}
 
   async execute(rawToken: string, newPassword: string): Promise<void> {
@@ -24,8 +26,8 @@ export class ResetPasswordUseCase {
     const tokenHash = this.tokenFactory.hashRaw(rawToken);
 
     // 3. Найти запись
-    const record = await this.passwordResetRepo.findByTokenHash(tokenHash);
-    if (!record) throw new DomainError('Invalid or expired reset link');
+    const record = await this.passwordResetRepo.consumeToken(tokenHash);
+  if (!record) throw new DomainError('Invalid or expired reset link');
 
     // 4. Проверить срок действия
     if (record.expiresAt < new Date()) {
@@ -40,12 +42,15 @@ export class ResetPasswordUseCase {
     // 6. Хэшировать и сохранить новый пароль
     const newHash = await this.passwordHasher.hash(newPassword);
     const updatedUser = user.setHashedPassword(newHash);
-    await this.userRepo.save(updatedUser);
 
-    // 7. Инвалидировать все сессии
-    await this.refreshTokenRepo.revokeAllByUserId(record.userId);
+    await this.unitOfWork.run(async () => {
+      await this.userRepo.save(updatedUser);
 
-    // 8. Удалить использованный токен
-    await this.passwordResetRepo.deleteByUserId(record.userId);
+      // 7. Инвалидировать все сессии
+      await this.refreshTokenRepo.revokeAllByUserId(record.userId);
+
+      // 8. Удалить использованный токен
+      await this.passwordResetRepo.deleteByUserId(record.userId);
+    });
   }
 }

@@ -70,6 +70,7 @@ model Lesson {
   lessonQuizzes     LessonQuiz[]
   lessonMessages    LessonMessage[]
   quizAttempts      QuizAttempt[]
+  lessonSummary     LessonSummary[]
 
   @@index([clientId, tutorId, type])
   @@index([tutorId, status, scheduledAt])   // Covering index(Index Only Scan). Предстоящие уроки Tutor
@@ -149,4 +150,17 @@ model LessonMessage {
 
   @@index([lessonId, createdAt])
   @@map("lesson_messages")
+}
+
+
+model LessonSummary {
+  id        String   @id @default(uuid())
+  lessonId  String   @unique @db.Uuid @map("lesson_id")
+  content   String   @db.Text   // markdown summary от Claude
+  model     String   @db.VarChar(100)   // "claude-opus-4-8" — для аудита
+  createdAt DateTime @default(now()) @db.Timestamptz() @map("created_at")
+
+  lesson Lesson @relation(fields: [lessonId], references: id, onDelete: Cascade)
+
+  @@map("lesson_summaries")
 }

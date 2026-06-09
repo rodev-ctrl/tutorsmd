@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { IPasswordResetRepository } from '../../../domain/repositories/IPasswordResetRepository';
+import { IPasswordResetRepository, PasswordResetRecord } from '../../../domain/repositories/IPasswordResetRepository';
 
 export class PrismaPasswordResetRepository implements IPasswordResetRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -12,13 +12,37 @@ export class PrismaPasswordResetRepository implements IPasswordResetRepository {
     });
   }
  
-
+/*
   async findByTokenHash(tokenHash: string): Promise<{ userId: string; tokenHash: string; expiresAt: Date } | null> {
     const record = await this.prisma.passwordReset.findUnique({
       where: { linkHash: tokenHash },
       select: { userId: true, expiresAt: true },
     });
     return record ? { ...record, tokenHash } : null;
+  }
+*/
+    async consumeToken(tokenHash: string): Promise<PasswordResetRecord | null> {
+    try {
+  
+       const record = await this.prisma.passwordReset.findUnique({
+        where: { linkHash: tokenHash },
+      });
+  
+      if (!record) return null;
+      
+      // DELETE ... RETURNING - атомарно, только 1 запрос получит запись
+      await this.prisma.passwordReset.delete({
+        where: { id: record.id },
+      });
+     return {
+        id:        record.id,
+        userId:    record.userId,
+        expiresAt: record.expiresAt,
+        tokenHash: record.linkHash,
+      };
+    } catch {
+      return null;
+    }
   }
 
   async deleteByUserId(userId: string): Promise<void> {

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { IEmailChangeRepository } from '../../../domain/repositories/email/IEmailChangeRepository';
+import { EmailChangeRecord, IEmailChangeRepository } from '../../../domain/repositories/email/IEmailChangeRepository';
 
 export class PrismaEmailChangeRepository implements IEmailChangeRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -26,19 +26,32 @@ export class PrismaEmailChangeRepository implements IEmailChangeRepository {
     });
   }
 
-  async findByTokenHash(tokenHash: string): Promise<{
-    userId: string;
-    newEmail: string;
-    expiresAt: Date;
-  } | null> {
-    const record = await this.prisma.emailChange.findUnique({
-      where: { linkHash: tokenHash },
-      select: { userId: true, newEmail: true, expiresAt: true },
-    });
-    return record ?? null;
-  }
-
   async deleteByUserId(userId: string): Promise<void> {
     await this.prisma.emailChange.deleteMany({ where: { userId } });
   }
+
+  async consumeToken(tokenHash: string): Promise<EmailChangeRecord | null> {
+  try {
+
+     const record = await this.prisma.emailChange.findUnique({
+      where: { linkHash: tokenHash },
+    });
+
+    if (!record) return null;
+    
+    // DELETE ... RETURNING - атомарно, только 1 запрос получит запись
+    await this.prisma.emailChange.delete({
+      where: { id: record.id },
+    });
+   return {
+      id:        record.id,
+      userId:    record.userId,
+      newEmail:  record.newEmail,
+      expiresAt: record.expiresAt,
+      createdAt: record.createdAt,
+    };
+  } catch {
+    return null;
+  }
+}
 }

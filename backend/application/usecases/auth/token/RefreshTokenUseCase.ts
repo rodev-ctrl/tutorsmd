@@ -7,6 +7,8 @@ import { DomainError } from '../../../../domain/errors/DomainError';
 import { Role } from '../../../../domain/entities/User';
 import { AccessToken } from '../../../../domain/value-objects/AccessToken';
 import { IRefreshTokenFactory } from '../../../ports/token/IRefreshTokenFactory';
+import { IUnitOfWork } from '../../../ports/IUnitOfWork';
+import { RefreshToken } from '../../../../domain/value-objects/RefreshToken';
 
 export interface RefreshResult {
   accessToken: string;
@@ -21,6 +23,7 @@ export class RefreshTokenUseCase {
     private readonly refreshTokenFactory: IRefreshTokenFactory,
     private readonly clientRepo: IClientRepository,
     private readonly tutorRepo: ITutorRepository,
+    private readonly unitOfWork: IUnitOfWork,
   ) {}
 
   async execute(rawToken: string, activeRole?: Role): Promise<RefreshResult> {
@@ -44,14 +47,17 @@ export class RefreshTokenUseCase {
       throw new DomainError(`User does not have role: ${resolvedRole}`);
     }
 
-    await this.refreshTokenRepo.revoke(incomingToken.hash);
+    let newToken: RefreshToken = this.refreshTokenFactory.generate();
+    
+    await this.unitOfWork.run(async () => {
+      await this.refreshTokenRepo.revoke(incomingToken.hash);
 
-    const newToken = this.refreshTokenFactory.generate();
-    await this.refreshTokenRepo.create({
-      userId: user.id,
-      tokenHash: newToken.hash,
-      deviceInfo: record.deviceInfo,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      await this.refreshTokenRepo.create({
+        userId: user.id,
+        tokenHash: newToken.hash,
+        deviceInfo: record.deviceInfo,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      });
     });
 
     const profileId = await this.resolveProfileId(user.id, resolvedRole);
