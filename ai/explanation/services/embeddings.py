@@ -1,3 +1,5 @@
+import re
+
 import anthropic
 import os
 import httpx
@@ -41,18 +43,18 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]
                 [--overlap--]
                 [----chunk2----]
     """
-    words  = text.split()
+    sentences = re.split(r'(?<=[.!?])\s+', text)
     chunks = []
     start  = 0
 
-    while start < len(words):
-        end   = min(start + chunk_size, len(words))
-        chunk = " ".join(words[start:end])
+    while start < len(sentences):
+        end   = min(start + chunk_size, len(sentences))
+        chunk = " ".join(sentences[start:end])
         chunks.append(chunk)
 
-        if end == len(words):
+        if end == len(sentences):
             break
 
-        start = end - overlap  # сдвигаемся с перекрытием
+        start = end - overlap  # сдвигаеюсь с перекрытием
 
     return chunks

@@ -115,6 +115,7 @@ def search_similar_chunks(
                     metadata,
                     1 - (embedding <=> %s::vector) AS similarity
                 FROM lesson_material_chunks
+                WHERE 1 - (embedding <=> %s::vector) > 0.7
                 ORDER BY embedding <=> %s::vector
                 LIMIT %s
                 """,
