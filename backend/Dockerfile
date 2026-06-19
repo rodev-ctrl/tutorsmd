@@ -9,7 +9,7 @@ RUN apk add --no-cache openssl netcat-openbsd
 
 COPY package*.json ./
 
-RUN npm ci
+RUN npm install
 
 COPY . .
 
@@ -29,7 +29,7 @@ RUN apk add --no-cache openssl netcat-openbsd
 
 COPY package*.json ./
 
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # dist
 COPY --from=builder /app/dist ./dist
