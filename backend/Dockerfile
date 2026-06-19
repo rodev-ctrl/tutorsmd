@@ -28,7 +28,6 @@ ENV NODE_ENV=production
 RUN apk add --no-cache openssl netcat-openbsd
 
 COPY package*.json ./
-COPY prisma.config.ts ./
 
 RUN npm ci --omit=dev
 
