@@ -8,7 +8,6 @@ WORKDIR /app
 RUN apk add --no-cache openssl netcat-openbsd
 
 COPY package*.json ./
-#COPY prisma.config.ts ./
 
 RUN npm ci
 
