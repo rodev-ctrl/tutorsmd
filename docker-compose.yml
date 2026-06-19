@@ -88,10 +88,10 @@ services:
         max-file: "3"
 
   tutors-ai:
-    build: ./ai-service
+    build: ./ai
     container_name: tutors-ai
     restart: unless-stopped
-    env_file: ./ai-service/.env
+    env_file: ./ai/ai-service/.env
     expose:
       - "8000"
     depends_on:
