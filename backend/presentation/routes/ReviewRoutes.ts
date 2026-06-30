@@ -11,6 +11,7 @@ import { ReviewController } from '../controllers/review/ReviewController';
 import {
   SubmitReviewSchema,
   GetTutorReviewsQuerySchema,
+  TutorIdParams,
 } from '../controllers/review/review.schema';
 import { reviewSubmitLimiter } from '../middlewares/rateLimiter';
 import { wrap } from './wrapper'; 
@@ -43,7 +44,7 @@ export const createReviewRouter = (
     '/tutors/:tutorId/reviews',
     publicYesCache(60),
     validate(GetTutorReviewsQuerySchema, 'query'),
-    wrap((req, res) => controller.getTutorReviews(req, res)),
+    wrap<TutorIdParams, {}, {}, { limit?: number; before?: string }>((req, res) => controller.getTutorReviews(req, res)),
   );
 
   return router;

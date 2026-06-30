@@ -35,10 +35,8 @@ export const GetSupportHistoryQuerySchema = z.object({
 
 
 
-export type SendSupportChatMessageBody =
-  z.infer<typeof SendSupportChatMessageSchema>;
+export type SendSupportChatMessageBody = z.infer<typeof SendSupportChatMessageSchema>;
 
-export type GetSupportHistoryQueryDto =
-  z.infer<typeof GetSupportHistoryQuerySchema>;
+export type GetSupportHistoryQueryDto = z.infer<typeof GetSupportHistoryQuerySchema>;
 
-export type ChatIdParams               = z.infer<typeof ChatIdParamsSchema>;
+export type ChatIdParams = z.infer<typeof ChatIdParamsSchema>;

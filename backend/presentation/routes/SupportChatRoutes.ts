@@ -7,6 +7,7 @@ import {
   ChatIdParamsSchema,
   GetSupportHistoryQuerySchema,
   SendSupportChatMessageSchema,
+  ChatIdParams,
 } from '../controllers/support-chat/support-chat.schema';
 import { supportChatJoinLimiter, supportChatLimiter } from '../middlewares/rateLimiter';
 
@@ -28,7 +29,7 @@ router.get(
 router.get(
   '/chats/:chatId',
   validate(ChatIdParamsSchema, 'params'),
-  wrap(async (req, res) => {
+  wrap<ChatIdParams>(async (req, res) => {
     await controller.getChatById(req, res);
   })
 );
@@ -57,7 +58,7 @@ router.get(
     '/:chatId/history',
     validate(ChatIdParamsSchema, 'params'),
     validate(GetSupportHistoryQuerySchema, 'query'),
-    wrap(async (req, res) => {
+    wrap<ChatIdParams, {}, {}, { limit?: number; before?: string }>(async (req, res) => {
       await controller.getHistory(req, res);
     })
   );
@@ -68,7 +69,7 @@ router.get(
     supportChatLimiter,
     validate(ChatIdParamsSchema, 'params'),
     validate(SendSupportChatMessageSchema),
-    wrap(async (req, res) => {
+    wrap<ChatIdParams, {}, { text?: string; attachments?: { key: string; name: string; mimeType: string; size: number }[] }>(async (req, res) => {
       await controller.sendMessage(req, res);
     })
   );

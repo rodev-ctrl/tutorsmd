@@ -12,6 +12,10 @@ import {
   StartQuizAttemptSchema,
   SubmitQuizAttemptSchema,
   ProvideAnswerFeedbackSchema,
+  QuizQuestionParams,
+  LessonIdParams,
+  QuizIdParams,
+  AttemptIdParams,
 } from '../controllers/quiz/quiz.schema';
 
 import { QuizController } from '../controllers/quiz/QuizController';
@@ -42,7 +46,7 @@ export const createQuizRouter = (
     requireRole('tutor'),
     quizCreateLimiter,
     validate(AddQuizQuestionSchema),
-    wrap((req, res) => controller.addQuestion(req, res)),
+    wrap<QuizQuestionParams>((req, res) => controller.addQuestion(req, res)),
   );
 
   // ───────────────────────────────────────────────────────────
@@ -57,7 +61,7 @@ export const createQuizRouter = (
     requireRole('tutor'),
     quizCreateLimiter,
     validate(AssignQuizToLessonSchema),
-    wrap((req, res) => controller.assignToLesson(req, res)),
+    wrap<LessonIdParams, {}, { quizId: string }>((req, res) => controller.assignToLesson(req, res)),
   );
 
   // ───────────────────────────────────────────────────────────
@@ -72,7 +76,7 @@ export const createQuizRouter = (
     requireRole('client'),
     quizAttemptLimiter,
     validate(StartQuizAttemptSchema),
-    (req, res) => controller.startAttempt(req, res),
+    wrap<QuizIdParams, {}, { lessonId?: string | null }>((req, res) => controller.startAttempt(req, res)),
   );
 
   // POST /quizzes/attempts/:attemptId/submit
@@ -83,7 +87,7 @@ export const createQuizRouter = (
     requireRole('client'),
     quizSubmitLimiter,
     validate(SubmitQuizAttemptSchema),
-    (req, res) => controller.submitAttempt(req, res),
+    wrap<AttemptIdParams, {}, { answers: { questionId: string; answer?: string | null; selectedOptions?: string[] }[] }>((req, res) => controller.submitAttempt(req, res)),
   );
 
   // ───────────────────────────────────────────────────────────
@@ -98,7 +102,7 @@ export const createQuizRouter = (
     requireRole('tutor'),
     quizCreateLimiter,
     validate(ProvideAnswerFeedbackSchema),
-    (req, res) => controller.provideAnswerFeedback(req, res),
+    wrap<AttemptIdParams, {}, { answerId: string; comment?: string | null; isCorrect?: boolean | null; earnedPoints?: number | null }>((req, res) => controller.provideAnswerFeedback(req, res)),
   );
 
   return router;

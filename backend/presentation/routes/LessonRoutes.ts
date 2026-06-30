@@ -15,6 +15,9 @@ import {
   LessonIdParamsSchema,
   ScheduleIdParamsSchema,
   MaterialIdParamsSchema,
+  LessonIdParams,
+  ScheduleIdParams,
+  MaterialIdParams,
 } from '../controllers/lesson/lesson.schema';
 import {
   lessonActionLimiter,
@@ -50,7 +53,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     requireAuth,
     lessonActionLimiter,
     validate(ScheduleIdParamsSchema, 'params'),
-    wrap((req, res) => controller.cancelRegularSchedule(req, res)),
+    wrap<ScheduleIdParams>((req, res) => controller.cancelRegularSchedule(req, res)),
   );
 
   // GET /lessons - список уроков текущего пользователя
@@ -65,7 +68,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     '/:lessonId',
     requireAuth,
     validate(LessonIdParamsSchema, 'params'),
-    wrap((req, res) => controller.getLesson(req, res)),
+    wrap<LessonIdParams>((req, res) => controller.getLesson(req, res)),
   );
 
   // --- Tutor actions ----------------------------------------------------
@@ -75,7 +78,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     requireRole('tutor'),
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
-    wrap((req, res) => controller.confirm(req, res)),
+    wrap<LessonIdParams>((req, res) => controller.confirm(req, res)),
   );
 
   router.post(
@@ -84,7 +87,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     requireRole('tutor'),
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
-    wrap((req, res) => controller.reject(req, res)),
+    wrap<LessonIdParams>((req, res) => controller.reject(req, res)),
   );
 
   router.post(
@@ -94,7 +97,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     lessonStartLimiter,
     validate(LessonIdParamsSchema, 'params'),
     validate(StartLessonSchema),
-    wrap((req, res) => controller.start(req, res)),
+    wrap<LessonIdParams, {}, { roomId: string }>((req, res) => controller.start(req, res)),
   );
 
   router.post(
@@ -103,7 +106,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     requireRole('tutor'),
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
-    wrap((req, res) => controller.complete(req, res)),
+    wrap<LessonIdParams>((req, res) => controller.complete(req, res)),
   );
 
 
@@ -115,7 +118,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
     validate(CancelLessonSchema),
-    wrap((req, res) => controller.cancelByClient(req, res)),
+    wrap<LessonIdParams, {}, { reason?: string }>((req, res) => controller.cancelByClient(req, res)),
   );
 
   router.post(
@@ -125,7 +128,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
     validate(CancelLessonSchema),
-    wrap((req, res) => controller.cancelByTutor(req, res)),
+    wrap<LessonIdParams, {}, { reason?: string }>((req, res) => controller.cancelByTutor(req, res)),
   );
 
   router.post(
@@ -134,7 +137,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
     validate(CancelLessonSchema),
-    wrap((req, res) => controller.cancelSingleLesson(req, res)),
+    wrap<LessonIdParams, {}, { reason?: string }>((req, res) => controller.cancelSingleLesson(req, res)),
   );
 
   // --- Reschedule ---------------------------------------------------------
@@ -145,7 +148,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
     validate(ProposeRescheduleSchema),
-    wrap((req, res) => controller.proposeReschedule(req, res)),
+    wrap<LessonIdParams, {}, { newScheduledAt: string }>((req, res) => controller.proposeReschedule(req, res)),
   );
 
   router.post(
@@ -154,7 +157,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     requireRole('client'),
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
-    wrap((req, res) => controller.acceptReschedule(req, res)),
+    wrap<LessonIdParams>((req, res) => controller.acceptReschedule(req, res)),
   );
 
   router.post(
@@ -163,7 +166,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     requireRole('client'),
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
-    wrap((req, res) => controller.declineReschedule(req, res)),
+    wrap<LessonIdParams>((req, res) => controller.declineReschedule(req, res)),
   );
 
   router.post(
@@ -173,7 +176,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
     validate(RescheduleByClientSchema),
-    wrap((req, res) => controller.rescheduleByClient(req, res)),
+    wrap<LessonIdParams, {}, { newScheduledAt: string; durationMinutes?: number }>((req, res) => controller.rescheduleByClient(req, res)),
   );
 
   // --- No-show ----------------------------------------------------
@@ -183,7 +186,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     requireRole('tutor'),
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
-    wrap((req, res) => controller.markNoShowClient(req, res)),
+    wrap<LessonIdParams>((req, res) => controller.markNoShowClient(req, res)),
   );
 
   router.post(
@@ -192,7 +195,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     requireRole('admin'),
     lessonActionLimiter,
     validate(LessonIdParamsSchema, 'params'),
-    wrap((req, res) => controller.markNoShowTutor(req, res)),
+    wrap<LessonIdParams>((req, res) => controller.markNoShowTutor(req, res)),
   );
 
   // --- Materials ----------------------------------------------------
@@ -202,14 +205,14 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     lessonMaterialLimiter,
     validate(LessonIdParamsSchema, 'params'),
     validate(UploadMaterialSchema),
-    wrap((req, res) => controller.uploadMaterial(req, res)),
+    wrap<LessonIdParams, {}, { materialType: 'homework' | 'homework_done' | 'lesson_file' | 'other'; fileName: string; mimeType: string; fileSize: number }>((req, res) => controller.uploadMaterial(req, res)),
   );
 
   router.get(
     '/:lessonId/materials',
     requireAuth,
     validate(LessonIdParamsSchema, 'params'),
-    wrap((req, res) => controller.getMaterials(req, res)),
+    wrap<LessonIdParams>((req, res) => controller.getMaterials(req, res)),
   );
 
   router.delete(
@@ -217,7 +220,7 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     requireAuth,
     lessonMaterialLimiter,
     validate(MaterialIdParamsSchema, 'params'),
-    wrap((req, res) => controller.deleteMaterial(req, res)),
+    wrap<MaterialIdParams>((req, res) => controller.deleteMaterial(req, res)),
   );
 
   return router;
