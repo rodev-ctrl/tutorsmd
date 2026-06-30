@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ITutorPublicController } from '../../controllers/tutor/public/ITutorPublicController';
 import { validate } from '../../middlewares/validate';
-import { publicCache } from '../../middlewares/cacheControl';
+import { publicYesCache } from '../../middlewares/cacheControl';
 import { wrap } from '../wrapper';
 import {
   TutorListQuerySchema,
