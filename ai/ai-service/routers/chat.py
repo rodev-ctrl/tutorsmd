@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from schemas.requests import ChatRequest, ChatMessage
 from services.retrieval import search_lesson_summaries, search_similar_chunks
-from auth.jwt import verify_jwt
+from auth import verify_jwt
 import anthropic
 import os
 import json

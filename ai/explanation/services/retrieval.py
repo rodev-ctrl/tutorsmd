@@ -3,7 +3,7 @@ import psycopg2.extras
 import os
 import json
 from typing import List, Optional
-from services.embeddings import get_embedding, get_embeddings_batch, chunk_text
+from services.embeddings import get_embedding, get_embeddings, chunk_text
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 

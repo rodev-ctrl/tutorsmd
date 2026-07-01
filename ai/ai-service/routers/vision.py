@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import httpx
 import base64
 from services.anthropic import explain_image
-from auth import verify_jwt  # проверка JWT от основного бэкенда
+from auth import verify_jwt 
 
 router = APIRouter()
 

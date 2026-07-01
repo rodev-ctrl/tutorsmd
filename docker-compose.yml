@@ -88,7 +88,9 @@ services:
         max-file: "3"
 
   tutors-ai:
-    build: ./ai
+    build: 
+      context: ./ai/ai-service
+      dockerfile: Dockerfile
     container_name: tutors-ai
     restart: unless-stopped
     env_file: ./ai/ai-service/.env

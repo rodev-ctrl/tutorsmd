@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from schemas.requests import IngestDocumentRequest, AskRequest
 from services.retrieval import ingest_document, search_similar_chunks
 from services.anthropic_client import answer_with_context
-from auth.jwt import verify_jwt
+from auth import verify_jwt
 
 router = APIRouter()
 
