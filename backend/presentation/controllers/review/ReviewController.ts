@@ -42,13 +42,7 @@ export class ReviewController {
   }
 
   async getTutorReviews(
-    req: Request
-    <
-      TutorIdParams,
-      {},
-      {},
-      GetTutorReviewsQueryDto
-    >,
+    req: Request<TutorIdParams, {}, {}, GetTutorReviewsQueryDto>,
     res: Response,
   ): Promise<void> {
     const { tutorId } = req.params;

@@ -68,12 +68,7 @@ async getChatById(req: Request, res: Response): Promise<void> {
 
   // GET /support/chat/:chatId/history
   async getHistory(
-    req: Request<
-      ChatIdParams,
-      {},
-      {},
-      GetSupportHistoryQueryDto
-    >,
+    req: Request<ChatIdParams, {}, {}, GetSupportHistoryQueryDto>,
     res: Response,
   ): Promise<void> {
     const requesterId = req.user!.userId;
@@ -105,11 +100,7 @@ async getChatById(req: Request, res: Response): Promise<void> {
 
   // POST /support/chat/:chatId/messages
   async sendMessage(
-    req: Request<
-      ChatIdParams,
-      {},
-      SendSupportChatMessageBody
-    >,
+    req: Request<ChatIdParams, {}, SendSupportChatMessageBody>,
     res: Response,
   ): Promise<void> {
     const senderId = req.user!.userId;
