@@ -144,6 +144,9 @@ jobs:
             echo "→ Rebuilding containers..."
             docker compose up -d --build --wait tutors-backend tutors-frontend tutors-ai
 
+            echo "→ Reloading nginx..."
+            docker compose restart nginx
+
             echo "→ Running migrations..."
             docker compose exec -T tutors-backend npx prisma migrate deploy
 
