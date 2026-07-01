@@ -141,17 +141,27 @@ jobs:
             echo "→ Pulling latest code..."
             git pull origin main
 
-            echo "→ Running migrations..."
-            docker compose exec -T tutors-backend npx prisma migrate deploy
-
             echo "→ Rebuilding containers..."
             docker compose up -d --build tutors-backend tutors-frontend tutors-ai
+
+            echo "→ Running migrations..."
+            docker compose exec -T tutors-backend npx prisma migrate deploy
 
             echo "→ Cleaning up old images..."
             docker image prune -f
 
             echo "→ Health check..."
-            sleep 10
-            curl --fail --silent --show-error https://tutorsmd.net/api/health
+            for i in $(seq 1 12); do
+              if curl --fail --silent --show-error https://tutorsmd.net/api/health; then
+                echo "✓ Health check passed"
+                break
+              fi
+              if [ "$i" -eq 12 ]; then
+                echo "✗ Health check failed after 12 attempts"
+                exit 1
+              fi
+              echo "Attempt $i failed, retrying in 5s..."
+              sleep 5
+            done
 
             echo "✓ Deploy successful"
