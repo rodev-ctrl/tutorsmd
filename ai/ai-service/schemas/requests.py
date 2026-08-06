@@ -70,3 +70,15 @@ class ChatRequest(BaseModel):
         if not v.strip():
             raise ValueError("Message cannot be empty")
         return v.strip()
+
+# ── Calendar ──────────────────────────────────────────────────────
+class BookLessonRequest(BaseModel):
+    request_text:      str   # z.B. "Buche eine Stunde für Donnerstag 16 Uhr"
+    tutor_calendar_id: str   # aus der DB, nicht vom Client frei wählbar
+
+    @field_validator("request_text")
+    @classmethod
+    def request_text_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("request_text cannot be empty")
+        return v.strip()

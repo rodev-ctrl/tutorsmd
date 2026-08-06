@@ -5,7 +5,7 @@ from typing import Optional
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 
-async def verify_jwt(authorization: Optional[str | None]):
+async def verify_jwt(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
