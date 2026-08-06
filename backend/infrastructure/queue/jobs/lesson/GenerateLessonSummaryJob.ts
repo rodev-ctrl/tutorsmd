@@ -8,7 +8,7 @@ export class GenerateLessonSummaryJob {
   ) {}
 
   async run(lessonId: string): Promise<void> {
-    // Проверяем что саммари ещё нет
+    
     const db: any = this.prisma;
     const existing = await db.lessonSummary.findUnique({
       where: { lessonId },
@@ -21,7 +21,7 @@ export class GenerateLessonSummaryJob {
       select:  { senderRole: true, text: true },
     });
 
-    // Нет сообщений — нечего суммаризировать
+  
     if (messages.length === 0) return;
 
     const transcript = messages
@@ -36,7 +36,7 @@ export class GenerateLessonSummaryJob {
         data: {
           lessonId,
           content,
-          model: 'claude-opus-4-8',
+          model: 'claude-sonnet-5',
         },
       });
 

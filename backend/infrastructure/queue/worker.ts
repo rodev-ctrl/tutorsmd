@@ -46,7 +46,7 @@ export const createWorker = (deps: WorkerDeps): Worker => {
     },
     {
       connection: bullmqConnection as ConnectionOptions,
-      concurrency: 1, // задачи выполняются последовательно — нет конкурентных проблем
+      concurrency: 1,
     },
   );
 
