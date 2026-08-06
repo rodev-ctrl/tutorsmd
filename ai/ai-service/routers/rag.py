@@ -19,7 +19,7 @@ GENERATION - LLM генерирует ответ на основе этого к
 from fastapi import APIRouter, Depends, HTTPException
 from schemas.requests import IngestDocumentRequest, AskRequest
 from services.retrieval import ingest_document, search_similar_chunks
-from services.anthropic_client import chat_with_rag
+from services.anthropic_client import chat_with_rag, answer_with_web_search
 from auth import verify_jwt
 
 router = APIRouter()
@@ -62,9 +62,14 @@ async def ask(
             )
 
             if not chunks:
+                # Kein Treffer in den Unterrichtsmaterialien — Fallback auf Websuche.
+                # Anthropic führt die Suche server-seitig aus, kein Agent-Loop nötig.
+                fallback = await answer_with_web_search(body.question)
                 return {
-                    "answer":  "Keine relevanten Materialien gefunden",
+                    "answer": fallback["answer"],
                     "sources": [],
+                    "fallback": "web_search",
+                    "search_queries": fallback["queries"],
                 }
 
             # 2. Собираем контекст из чанков

@@ -174,7 +174,7 @@ model LessonSummary {
   id        String   @id @default(uuid())
   lessonId  String   @unique @db.Uuid @map("lesson_id")
   content   String   @db.Text   // markdown summary от Claude
-  model     String   @db.VarChar(100)   // "claude-opus-4-8" — для аудита
+  model     String   @db.VarChar(100)   // "claude-sonnet-5" - для аудита
   createdAt DateTime @default(now()) @db.Timestamptz() @map("created_at")
 
   lesson Lesson @relation(fields: [lessonId], references: id, onDelete: Cascade)

@@ -66,6 +66,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     expose:
       - "5432"
+    ports:
+      - "127.0.0.1:15432:5432"   # только localhost, 15432 — локальный конфликт с нативным Postgres на этой машине (не актуально для сервера)
     volumes:
       - postgres-data:/var/lib/postgresql/data   # ссылаюсь внизу
     healthcheck:
@@ -92,7 +94,7 @@ services:
       context: ./ai/ai-service
       dockerfile: Dockerfile
     container_name: tutors-ai
-   
+    restart: on-failure
     env_file: ./ai/ai-service/.env
     expose:
       - "8000"
@@ -114,10 +116,6 @@ services:
       - tutors-network
         
     deploy:
-      restart-policy:
-        condtion: on-failure
-        delay: 10s
-        max-attempts: 3
       resources:
         limits:
           cpus: "0.5"
