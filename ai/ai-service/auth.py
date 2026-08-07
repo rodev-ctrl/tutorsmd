@@ -3,7 +3,7 @@ import os
 from fastapi import HTTPException, Header
 from typing import Optional
 
-JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_AI_SERVICE_SECRET = os.getenv("JWT_AI_SERVICE_SECRET")
 
 async def verify_jwt(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -11,7 +11,7 @@ async def verify_jwt(authorization: Optional[str] = Header(None)):
 
     token = authorization.split(" ")[1]
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        payload = jwt.decode(token, JWT_AI_SERVICE_SECRET, algorithms=["HS256"])
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")

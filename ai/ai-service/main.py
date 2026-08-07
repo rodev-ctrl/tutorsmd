@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import chat, rag, vision, calendar
+from routers import chat, rag, vision, calendar, summary
 import os
 
 app = FastAPI(title="TutorsMD AI Service", version="1.0.0")
@@ -17,6 +17,7 @@ app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(rag.router, prefix="/rag", tags=["rag"])
 app.include_router(vision.router, prefix="/vision", tags=["vision"])
 app.include_router(calendar.router, prefix="/calendar", tags=["calendar"])
+app.include_router(summary.router, prefix="/summary", tags=["summary"])
 
 @app.get("/health")
 async def health():
