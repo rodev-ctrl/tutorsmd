@@ -152,8 +152,8 @@ import { UpdateTutorSubjectsUseCase } from '../application/usecases/tutor/Update
 import { GetUserLessonsUseCase } from '../application/usecases/lesson/GetUserLessonsUseCase';
 import { BoardSnapshotService } from '../infrastructure/websocket/handlers/board/BoardSnapshotService';
 import { GenerateLessonSummaryJob } from '../infrastructure/queue/jobs/lesson/GenerateLessonSummaryJob';
-import { ClaudeSummaryService } from '../infrastructure/ai/ClaudeSummaryService';
-import { anthropic } from '../infrastructure/ai/AnthropicClient';
+import { AiServiceSummaryClient } from '../infrastructure/ai/AiServiceSummaryClient';
+
 import { CancelEmailChangeUseCase } from '../application/usecases/auth/email/CancelEmailChangeUseCase';
 import { ConfirmOldEmailChangeUseCase } from '../application/usecases/auth/email/ConfrimOldEmailChangeUseCase';
 
@@ -503,8 +503,8 @@ const submitFeedbackUseCase = new SubmitFeedbackUseCase(
 );
 
 // JOBS /////////////////////////////////////////
-const claudeSummaryService = new ClaudeSummaryService(anthropic);
-const generateLessonSummary = new GenerateLessonSummaryJob(prisma, claudeSummaryService);
+const generateLessonSummary = new GenerateLessonSummaryJob(new AiServiceSummaryClient());
+
 const autoCompleteLesson = new AutoCompleteLessonsJob(
   prisma,
   completeLessonUseCase,

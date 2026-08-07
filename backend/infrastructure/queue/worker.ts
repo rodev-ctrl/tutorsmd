@@ -37,7 +37,7 @@ export const createWorker = (deps: WorkerDeps): Worker => {
           await deps.sendLessonReminders.run();
           break;
         case JobNames.GENERATE_LESSON_SUMMARY:
-          await deps.generateLessonSummary.run(job.data);
+          await deps.generateLessonSummary.run(job.data.lessonId);
           break;
 
         default:
