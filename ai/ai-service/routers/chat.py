@@ -52,7 +52,7 @@ async def chat(
         messages.append({"role": "user", "content": body.message})
 
         response = client.messages.create(
-            model="claude-sonnet-4-6",
+            model="claude-sonnet-5",
             max_tokens=1000,
             system=system,
             messages=messages,
@@ -86,7 +86,7 @@ async def chat_stream(
         messages.append({"role": "user", "content": body.message})
 
         with client.messages.stream(
-            model="claude-sonnet-4-6",
+            model="claude-sonnet-5",
             max_tokens=1000,
             system=SYSTEM_PROMPT,
             messages=messages,
