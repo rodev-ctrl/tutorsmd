@@ -13,7 +13,10 @@ chatForUsers/
 *.docx
 *.zip
 .codegpt/
+.mcp.json
+.claude/audit.log
 **/*.js
+*.js
 !vite.config.js
 
 
