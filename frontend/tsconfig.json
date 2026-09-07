@@ -38,6 +38,6 @@
       "@shared/*":   ["src/shared/*"]
     }
   },
-  "include": ["src", "index.tsx", "index.js", "reportWebVitals.ts"],
+  "include": ["src", "index.tsx", "reportWebVitals.ts"],
   "exclude": ["node_modules", "dist"]
 }
