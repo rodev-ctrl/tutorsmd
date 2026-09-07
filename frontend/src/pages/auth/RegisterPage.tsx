@@ -24,7 +24,8 @@ export default function RegisterPage() {
 
   const [selectedRole, setSelectedRole] = useState<'client' | 'tutor'>('client');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({
+  // watch нужен индикатору надёжности пароля ниже (passwordValue).
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema) as any,
     defaultValues: {
       languageCode: 'de',
