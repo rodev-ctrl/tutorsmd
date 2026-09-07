@@ -16,6 +16,7 @@ import { RevokeAllSessionsUseCase } from '../../../application/usecases/auth/tok
 import { RequestEmailChangeUseCase } from '../../../application/usecases/auth/email/RequestEmailChangeUseCase';
 import { ConfirmEmailChangeUseCase } from '../../../application/usecases/auth/email/ConfirmEmailChangeUseCase';
 import { ResendVerificationUseCase } from '../../../application/usecases/auth/activation/ResendVerificationUseCase';
+import { GoogleAuthUseCase } from '../../../application/usecases/auth/oauth/GoogleAuthUseCase';
 
 
 import {
@@ -30,6 +31,7 @@ import {
   RequestEmailChangeBody,
   RevokeSessionParams,
   ActivateAccountParams,
+  GoogleAuthBody,
 } from './auth.schema';
 import { CancelEmailChangeUseCase } from '../../../application/usecases/auth/email/CancelEmailChangeUseCase';
 import { ConfirmOldEmailChangeUseCase } from '../../../application/usecases/auth/email/ConfrimOldEmailChangeUseCase';
@@ -63,6 +65,8 @@ export class AuthController implements IAuthController {
     private readonly cancelEmailChangeUseCase: CancelEmailChangeUseCase,
     private readonly resendVerificationUseCase: ResendVerificationUseCase,
     private readonly confirmOldEmailChangeUseCase: ConfirmOldEmailChangeUseCase,
+    private readonly googleAuthClientUseCase: GoogleAuthUseCase,
+    private readonly googleAuthTutorUseCase: GoogleAuthUseCase,
   ) {}
 
   
@@ -128,6 +132,36 @@ export class AuthController implements IAuthController {
       accessToken: result.accessToken,
       user: result.user,
     });
+  }
+
+  // ─── Google OAuth ────────────────────────────────────────────
+
+  private async handleGoogleAuth(
+    useCase: GoogleAuthUseCase,
+    req: Request<{}, {}, GoogleAuthBody>,
+    res: Response,
+  ): Promise<void> {
+    const { idToken } = req.body;
+
+    const result = await useCase.execute({
+      idToken,
+      deviceInfo: req.headers['user-agent'],
+    });
+
+    res.cookie('refreshToken', result.refreshToken, REFRESH_COOKIE_OPTIONS);
+
+    res.status(200).json({
+      accessToken: result.accessToken,
+      user: result.user,
+    });
+  }
+
+  async googleAuthClient(req: Request<{}, {}, GoogleAuthBody>, res: Response): Promise<void> {
+    await this.handleGoogleAuth(this.googleAuthClientUseCase, req, res);
+  }
+
+  async googleAuthTutor(req: Request<{}, {}, GoogleAuthBody>, res: Response): Promise<void> {
+    await this.handleGoogleAuth(this.googleAuthTutorUseCase, req, res);
   }
 
   async logout(req: Request, res: Response): Promise<void> {

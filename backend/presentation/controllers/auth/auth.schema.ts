@@ -62,6 +62,13 @@ export const RevokeSessionSchema = z.object({
   tokenHash: z.string().min(1, 'Token hash is required'),
 });
 
+// ─── Google OAuth ───────────────────────────────────────────────
+// idToken = "credential" из Google Identity Services (JWT, подписанный Google) —
+// подлинность проверяется на бэкенде через google-auth-library, не здесь.
+export const GoogleAuthSchema = z.object({
+  idToken: z.string().min(1, 'idToken is required'),
+});
+
 
 
 export type RegisterBody             = z.infer<typeof RegisterSchema>;
@@ -75,3 +82,4 @@ export type ResetPasswordBody        = z.infer<typeof ResetPasswordSchema>;
 export type RequestEmailChangeBody   = z.infer<typeof RequestEmailChangeSchema>;
 export type RevokeSessionParams      = z.infer<typeof RevokeSessionSchema>;
 export type ActivateAccountParams    = z.infer<typeof ActivateAccountSchema>;
+export type GoogleAuthBody           = z.infer<typeof GoogleAuthSchema>;
