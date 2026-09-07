@@ -61,6 +61,27 @@ export const authApi = baseApi.injectEndpoints({
       },
     }),
 
+    // POST /auth/google/:role — idToken = "credential" из Google Identity Services
+    googleAuth: build.mutation<AuthResponse, { idToken: string; role: 'client' | 'tutor' }>({
+      query: ({ idToken, role }) => ({
+        url: `/auth/google/${role}`,
+        method: 'POST',
+        body: { idToken },
+      }),
+      onQueryStarted: async (_arg, { dispatch, queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+          tokenManager.set(data.accessToken);
+          dispatch(setCredentials({
+            userId:     data.user.id,
+            activeRole: data.user.activeRole,
+          }));
+        } catch {
+          // ошибка обрабатывается в компоненте
+        }
+      },
+    }),
+
     // POST /auth/logout
     logout: build.mutation<void, void>({
       query: () => ({
@@ -230,6 +251,7 @@ export const {
   useRegisterClientMutation,
   useRegisterTutorMutation,
   useLoginMutation,
+  useGoogleAuthMutation,
   useLogoutMutation,
   useRefreshMutation,
   useForgotPasswordMutation,
