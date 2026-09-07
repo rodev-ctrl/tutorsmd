@@ -2,6 +2,7 @@
 name: lesson-summary-generator
 description: Generates a structured summary of a tutoring lesson from a chat transcript. Use whenever asked to summarize, recap, or produce notes for a completed TutorsMD lesson.
 ---
+<instructions>
 
 # Lesson Summary Generator
 
@@ -50,3 +51,5 @@ useful without the original transcript.
 - Generic filler ("The student learned about math today").
 - Mixing languages mid-summary.
 - Adding a "Homework" section when none was assigned.
+
+</instructions>

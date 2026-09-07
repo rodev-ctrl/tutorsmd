@@ -1,60 +1,126 @@
 import re
+import statistics
+from typing import List, Literal
 
-import anthropic
-import os
-import httpx
-from typing import List
+import voyageai
+
+# ВАЖНО: Voyage AI — отдельная компания/API, не проксируется через Anthropic SDK.
+# Прежняя реализация (anthropic.Anthropic(api_key=VOYAGE_API_KEY).embeddings.create(...))
+# использовала несуществующий метод — такого namespace у Anthropic SDK нет вообще
+# (сверено с документацией: ни embeddings, ни rerank там не упоминаются). Баг был
+# незамечен, потому что ai-service ни разу не запускался успешно до сих пор.
+vo = voyageai.Client()  # читает VOYAGE_API_KEY из окружения сам
+
+EMBEDDING_MODEL = "voyage-3"   # 1024 измерения — совпадает с vector(1024) в схеме БД.
+                                # Не менять на voyage-4/voyage-3-large не пересоздав
+                                # столбец и не переиндексировав все существующие чанки.
+EMBEDDING_DIM   = 1024
+RERANK_MODEL    = "rerank-2.5-lite"
+
+InputType = Literal["query", "document"]
 
 
-API_KEY = os.getenv('VOYAGE_API_KEY')
-client = anthropic.Anthropic(api_key=API_KEY)
-
-# Voyage-3 через Anthropic SDK — лучшее качество для multilingual
-EMBEDDING_MODEL = "voyage-3"
-EMBEDDING_DIM   = 1024  # размерность voyage-3
-
-def get_embedding(text: str) -> List[float]:
-    """Превращает текст в вектор."""
-    response = client.embeddings.create(
-        model="voyage-3",
-        input=text,
-    )
-    # Используем voyage через httpx напрямую
-    
-    return response.embeddings[0].embedding
-
-def get_embeddings(texts: List[str]) -> List[List[float]]:
-    
-    response = client.embeddings.create(
-        model="voyage-3",
-        input=texts,
-    )
-    return [e.embedding for e in sorted(response.embeddings, key=lambda x: x.index)]
-
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]:
+def get_embedding(text: str, input_type: InputType = "document") -> List[float]:
     """
-    Разбивает текст на чанки
-    
-    chunk_size = 500 токенов (примерно 400 слов)
-    overlap    = 50  токенов - перекрытие чтобы не терять контекст на границах
-    
-    Пример:
-    [----chunk1----]
-                [--overlap--]
-                [----chunk2----]
+    Превращает текст в вектор.
+
+    input_type различает запрос и документ — Voyage тренирует эти два типа
+    ассимметрично (asymmetric retrieval), это заметно повышает точность поиска
+    по сравнению с одним и тем же типом для обоих. Используй "query" для
+    вопроса пользователя, "document" для чанков/саммари, которые кладутся в БД.
     """
-    sentences = re.split(r'(?<=[.!?])\s+', text)
-    chunks = []
-    start  = 0
+    result = vo.embed([text], model=EMBEDDING_MODEL, input_type=input_type)
+    return result.embeddings[0]
 
-    while start < len(sentences):
-        end   = min(start + chunk_size, len(sentences))
-        chunk = " ".join(sentences[start:end])
-        chunks.append(chunk)
 
-        if end == len(sentences):
-            break
+def get_embeddings(texts: List[str], input_type: InputType = "document") -> List[List[float]]:
+    if not texts:
+        return []
+    result = vo.embed(texts, model=EMBEDDING_MODEL, input_type=input_type)
+    return result.embeddings
 
-        start = end - overlap  # сдвигаеюсь с перекрытием
+
+def rerank(query: str, documents: List[str], top_k: int = 3) -> List[dict]:
+    """
+    Cross-encoder реранкинг: пересортировывает уже найденные векторным поиском
+    кандидаты по реальной релевантности запросу. Векторный поиск быстрый, но
+    сравнивает запрос и документ независимо (bi-encoder) — реранкер смотрит на
+    пару целиком и заметно точнее на верхних позициях.
+
+    Возвращает список {"index": исходный индекс в documents, "content": текст,
+    "relevance_score": float}, отсортированный по убыванию релевантности.
+    Пустой список на пустом input — не гоняем API ради нуля кандидатов.
+    """
+    if not documents:
+        return []
+
+    result = vo.rerank(query=query, documents=documents, model=RERANK_MODEL, top_k=top_k)
+    return [
+        {
+            "index": r.index,
+            "content": r.document,
+            "relevance_score": r.relevance_score,
+        }
+        for r in result.results
+    ]
+
+
+def _cosine_distance(a: List[float], b: List[float]) -> float:
+    dot     = sum(x * y for x, y in zip(a, b))
+    norm_a  = sum(x * x for x in a) ** 0.5
+    norm_b  = sum(x * x for x in b) ** 0.5
+    if norm_a == 0 or norm_b == 0:
+        return 1.0
+    return 1 - dot / (norm_a * norm_b)
+
+
+def chunk_text(text: str) -> List[str]:
+    """
+    Semantic chunking: режет текст не по фиксированному размеру, а там, где
+    смысл реально меняется.
+
+    1. Делим на предложения.
+    2. Считаем embedding каждого предложения (отдельные вызовы Voyage —
+       дороже, чем было, но именно этого просили в TODO вместо word-split).
+    3. Считаем косинусное расстояние между соседними предложениями.
+    4. Точка разрыва — там, где расстояние выше адаптивного порога
+       (среднее + 1.5 стандартных отклонения). Ниже порога — предложения
+       остаются в одном чанке.
+
+    Старая версия считала chunk_size/overlap в ПРЕДЛОЖЕНИЯХ при значении 500 —
+    реальная стенограмма урока (50-100 предложений) никогда не набирала 500,
+    так что функция почти всегда возвращала один чанк на весь текст, а overlap
+    не использовался ни разу. Эта версия режет по смыслу независимо от длины.
+    """
+    sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', text) if s.strip()]
+
+    if len(sentences) <= 2:
+        return [text.strip()] if text.strip() else []
+
+    embeddings = get_embeddings(sentences, input_type="document")
+
+    distances = [
+        _cosine_distance(embeddings[i], embeddings[i + 1])
+        for i in range(len(embeddings) - 1)
+    ]
+
+    # Меньше 2 расстояний — статистика (mean/stdev) не имеет смысла, весь текст
+    # в один чанк.
+    if len(distances) < 2:
+        return [" ".join(sentences)]
+
+    mean_dist  = statistics.mean(distances)
+    stdev_dist = statistics.pstdev(distances)
+    threshold  = mean_dist + 1.5 * stdev_dist
+
+    chunks  = []
+    current = [sentences[0]]
+    for i, dist in enumerate(distances):
+        if dist > threshold:
+            chunks.append(" ".join(current))
+            current = [sentences[i + 1]]
+        else:
+            current.append(sentences[i + 1])
+    chunks.append(" ".join(current))
 
     return chunks
