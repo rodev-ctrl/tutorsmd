@@ -6,8 +6,10 @@ import { useState } from 'react';
 import { useRegisterClientMutation, useRegisterTutorMutation } from '@shared/api/authApi';
 import { registerSchema, type RegisterFormData } from '@features/auth/schemas';
 import AuthLayout from '@widgets/auth/ui/AuthLayout';
+import { GoogleSignInButton } from '@widgets/auth/ui/GoogleSignInButton';
 import { authInputClass, authButtonClass } from '@shared/ui/auth/styles';
 import { useTranslation } from 'react-i18next';
+import zxcvbn from 'zxcvbn';
 
 
 export default function RegisterPage() {
@@ -22,13 +24,18 @@ export default function RegisterPage() {
 
   const [selectedRole, setSelectedRole] = useState<'client' | 'tutor'>('client');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({
+  // watch нужен индикатору надёжности пароля ниже (passwordValue).
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema) as any,
     defaultValues: {
       languageCode: 'de',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
   });
+  const passwordValue = watch('password');
+  const passwordScore = passwordValue ? zxcvbn(passwordValue).score : -1;
+  const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'];
+  const labels = ['Sehr schwach', 'Schwach', 'Mittel', 'Gut', 'Stark'];
 
   const onSubmit = async (data: RegisterFormData) => {
     setServerError(null);
@@ -77,7 +84,7 @@ export default function RegisterPage() {
             ? `${t('registerPage.titleTutor')} | TutorsMD`
             : `${t('registerPage.titleClient')} | TutorsMD`}
         </title>
-        <meta name="description" content="Erstellen Sie kostenlos ein Konto bei TutorsMD." />
+        <meta name="description" content="Erstellen Sie kostenlos ein Konto bei TutorsMD" />
         <meta name="robots" content="noindex,nofollow" />
       </Helmet>
 
@@ -101,6 +108,13 @@ export default function RegisterPage() {
     </button>
   ))}
 </div>
+
+        <GoogleSignInButton role={isTutor ? 'tutor' : 'client'} onError={setServerError} />
+        <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
+          <div className="h-px flex-1 bg-slate-200" />
+          {t('or')}
+          <div className="h-px flex-1 bg-slate-200" />
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -167,6 +181,17 @@ export default function RegisterPage() {
             />
             {errors.password && (
               <p className="mt-1.5 text-xs text-red-500">{errors.password.message}</p>
+            )}
+            {!errors.password && passwordValue && (
+              <div className="mt-1.5">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className={`h-full transition-all ${colors[passwordScore]}`}
+                    style={{ width: `${((passwordScore + 1) / 5) * 100}%` }}
+                  />
+                </div>
+                <p className="mt-1 text-xs text-slate-500">{labels[passwordScore]}</p>
+              </div>
             )}
           </div>
 

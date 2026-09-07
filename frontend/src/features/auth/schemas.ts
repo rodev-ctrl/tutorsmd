@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import zxcvbn from 'zxcvbn';
 
 export const loginSchema = z.object({
   email:      z.string().email('Ungültige E-Mail-Adresse'),
@@ -12,7 +13,11 @@ export const registerSchema = z.object({
   email:    z.string().email('Ungültige E-Mail-Adresse'),
   password: z.string()
     .min(15, 'Mindestens 15 Zeichen')
-    .max(64,  'Maximal 64 Zeichen'),
+    .max(64,  'Maximal 64 Zeichen')
+    .refine(
+      (val) => zxcvbn(val).score >= 3,
+      'Passwort ist zu einfach vorherzusagen'
+  ),
   confirmPassword: z.string(),
   timezone:     z.string().optional(),
   languageCode: z.enum(['en', 'de', 'ru']),
@@ -32,6 +37,8 @@ export const resetPasswordSchema = z.object({
   (d) => d.newPassword === d.confirmPassword,
   { message: 'Passwörter stimmen nicht überein', path: ['confirmPassword'] },
 );
+
+
 
 export type LoginFormData         = z.infer<typeof loginSchema>;
 export type RegisterFormData      = z.infer<typeof registerSchema>;

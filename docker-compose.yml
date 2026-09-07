@@ -95,7 +95,7 @@ services:
       dockerfile: Dockerfile
     container_name: tutors-ai
     restart: on-failure
-    env_file: ./ai/ai-service/.env
+    env_file: ./ai/.env
     expose:
       - "8000"
     healthcheck:

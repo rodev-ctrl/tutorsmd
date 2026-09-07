@@ -92,6 +92,10 @@ jobs:
           PASSWORD_PEPPER: test-pepper-for-ci
           NODE_ENV: test
 
+      - name: Build
+        working-directory: backend
+        run: npm run build
+
   # ── 2. Frontend: typecheck + build ────────────────────────────
   frontend:
     name: Frontend — typecheck & build
@@ -113,6 +117,14 @@ jobs:
         working-directory: frontend
         run: npx tsc --noEmit
 
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Unit tests
+        working-directory: frontend
+        run: npm run test:ci
+
       - name: Build
         working-directory: frontend
         run: npm run build
@@ -120,7 +132,35 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
 
-  # ── 3. Deploy — только main ───────────────────────────────────
+  # ── 3. Validate docker-compose.yml ────────────────────────────
+  validate-compose:
+    name: Validate docker-compose.yml
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # `docker compose config` не просто парсит YAML — он раскрывает
+      # env_file и подставляет ${VAR}. Реальные .env в репозиторий не
+      # коммитятся (.gitignore), поэтому в раннере их нет, и шаг падал с
+      #   env file /home/runner/.../ai/.env not found
+      # Создаём пустые заглушки: проверяем СТРУКТУРУ compose-файла, а не
+      # секреты. Пустой env_file для compose валиден.
+      - name: Create placeholder env files
+        run: touch ai/.env backend/.env
+
+      - name: Validate compose file syntax
+        run: docker compose config --quiet
+        env:
+          # Без них compose печатает "variable is not set, defaulting to a
+          # blank string" и собирает строку подключения вида
+          # postgresql://:@postgres:5432/ — синтаксис проходит, но проверка
+          # получается бессмысленной. Значения фиктивные и никуда не уходят.
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+
+  # ── 4. Deploy — только main ───────────────────────────────────
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest

@@ -34,6 +34,10 @@ export interface Lesson {
   client?: { name: string; surname: string; avatarUrl: string | null };
 }
 
+export type LessonSummaryResult =
+  | { status: 'not_ready' }
+  | { status: 'ready'; content: string; model: string; createdAt: string };
+
 export const lessonApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
 
@@ -41,6 +45,12 @@ export const lessonApi = baseApi.injectEndpoints({
     getLesson: build.query<Lesson, string>({
       query: (id) => `/lessons/${id}`,
       providesTags: (_r, _e, id) => [{ type: 'Lesson', id }],
+    }),
+
+    // GET /lessons/:lessonId/summary
+    getLessonSummary: build.query<LessonSummaryResult, string>({
+      query: (lessonId) => `/lessons/${lessonId}/summary`,
+      providesTags: (_r, _e, lessonId) => [{ type: 'Lesson', id: lessonId }],
     }),
 
     // GET /lessons
@@ -140,6 +150,7 @@ export const lessonApi = baseApi.injectEndpoints({
 
 export const {
   useGetLessonQuery,
+  useGetLessonSummaryQuery,
   useGetUserLessonsQuery,
   useCreateTrialLessonMutation,
   useConfirmLessonMutation,

@@ -48,6 +48,8 @@ import { appEvents, AppEvents } from '../infrastructure/events/AppEventEmitter';
 // ─── Profile Creators ─────────────────────────────────────────
 import { ClientProfileCreator } from '../infrastructure/profile-creators/ClientProfileCreator';
 import { TutorProfileCreator }  from '../infrastructure/profile-creators/TutorProfileCreator';
+import { GoogleAuthUseCase } from '../application/usecases/auth/oauth/GoogleAuthUseCase';
+import { GoogleTokenVerifier } from '../infrastructure/auth/GoogleTokenVerifier';
 
 // ─── Use Cases: Auth ──────────────────────────────────────────
 import { RegisterUserUseCase }       from '../application/usecases/auth/registration/RegisterUserUseCase';
@@ -153,6 +155,10 @@ import { GetUserLessonsUseCase } from '../application/usecases/lesson/GetUserLes
 import { BoardSnapshotService } from '../infrastructure/websocket/handlers/board/BoardSnapshotService';
 import { GenerateLessonSummaryJob } from '../infrastructure/queue/jobs/lesson/GenerateLessonSummaryJob';
 import { AiServiceSummaryClient } from '../infrastructure/ai/AiServiceSummaryClient';
+import { AiServiceRagClient } from '../infrastructure/ai/AiServiceRagClient';
+import { AskAboutMaterialsUseCase } from '../application/usecases/lesson/material/AskAboutMaterialsUseCase';
+import { GetLessonSummaryUseCase } from '../application/usecases/lesson/GetLessonSummaryUseCase';
+import { PrismaLessonSummaryRepository } from '../infrastructure/database/repositories/PrismaLessonSummaryRepository';
 
 import { CancelEmailChangeUseCase } from '../application/usecases/auth/email/CancelEmailChangeUseCase';
 import { ConfirmOldEmailChangeUseCase } from '../application/usecases/auth/email/ConfrimOldEmailChangeUseCase';
@@ -254,6 +260,37 @@ const loginUseCase = new LoginUseCase(
   userRepo,
   refreshTokenRepo,
   passwordHasher,
+  accessTokenFactory,
+  refreshTokenFactory,
+  clientRepo,
+  tutorRepo,
+);
+
+// GOOGLE_CLIENT_ID absichtlich nicht beim Start erzwungen — sonst crasht der
+// ganze Server für alle, die Google-OAuth noch nicht eingerichtet haben.
+// Fehlt die Variable, schlagen nur die /auth/google/* Aufrufe selbst fehl.
+const googleTokenVerifier = new GoogleTokenVerifier(process.env.GOOGLE_CLIENT_ID ?? '');
+
+const googleAuthClientUseCase = new GoogleAuthUseCase(
+  userRepo,
+  googleTokenVerifier,
+  clientProfileCreator,
+  idGenerator,
+  unitOfWork,
+  refreshTokenRepo,
+  accessTokenFactory,
+  refreshTokenFactory,
+  clientRepo,
+  tutorRepo,
+);
+
+const googleAuthTutorUseCase = new GoogleAuthUseCase(
+  userRepo,
+  googleTokenVerifier,
+  tutorProfileCreator,
+  idGenerator,
+  unitOfWork,
+  refreshTokenRepo,
   accessTokenFactory,
   refreshTokenFactory,
   clientRepo,
@@ -377,9 +414,19 @@ const getMaterialUseCase = new GetLessonMaterialUseCase(
   fileStorage
 );
 const deleteMaterialUseCase = new DeleteLessonMaterialUseCase(
-  materialRepo, 
+  materialRepo,
   fileStorage
-); 
+);
+const aiServiceRagClient = new AiServiceRagClient();
+const askAboutMaterialsUseCase = new AskAboutMaterialsUseCase(
+  lessonRepo,
+  aiServiceRagClient,
+);
+const lessonSummaryRepo = new PrismaLessonSummaryRepository(prisma);
+const getLessonSummaryUseCase = new GetLessonSummaryUseCase(
+  lessonRepo,
+  lessonSummaryRepo,
+);
 const createRegularScheduleUseCase = new CreateRegularScheduleUseCase(
   scheduleRepo, 
   lessonRepo, 
@@ -542,7 +589,9 @@ const authController = new AuthController(
   confirmEmailChangeUseCase,
   cancelEmailChangeUseCase,
   resendVerificationUseCase,
-  confirmOldEmailChangeUseCase
+  confirmOldEmailChangeUseCase,
+  googleAuthClientUseCase,
+  googleAuthTutorUseCase,
 );
 
 const profileController = new ProfileController(getProfileUseCase, updateProfileUseCase);
@@ -561,10 +610,12 @@ const lessonController = new LessonController(
   rescheduleLessonUseCase, 
   markNoShowClientUseCase,
   markNoShowTutorUseCase, 
-  uploadMaterialUseCase, 
-  getMaterialUseCase, 
-  deleteMaterialUseCase, 
-  createRegularScheduleUseCase, 
+  uploadMaterialUseCase,
+  getMaterialUseCase,
+  deleteMaterialUseCase,
+  askAboutMaterialsUseCase,
+  getLessonSummaryUseCase,
+  createRegularScheduleUseCase,
   cancelRegularScheduleUseCase, 
   cancelSingleLessonUseCase,
   getUserLessonsUseCase,
