@@ -6,6 +6,15 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
 
+    // Бандлит vite, tsc здесь нужен ТОЛЬКО для проверки типов
+    // (скрипт build = "tsc && vite build").
+    // Без noEmit шаг `tsc` раскладывал скомпилированные .js рядом с каждым
+    // .tsx прямо в src/ — 99 файлов. Они попадали под линтер, дублировали
+    // исходники в поиске по проекту и выглядели как живой код. В git не
+    // уходили (frontend/.gitignore: *.js), поэтому в CI проблема не
+    // проявлялась и жила только у разработчика на диске.
+    "noEmit": true,
+
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

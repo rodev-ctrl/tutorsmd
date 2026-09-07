@@ -18,6 +18,7 @@ import { LessonChat }     from '@widgets/lesson/LessonChat';
 import { Whiteboard }     from '@widgets/lesson/Whiteboard';
 import { LessonControls } from '@widgets/lesson/LessonControls';
 import { LessonSocketProvider } from '@shared/providers/LessonSocketProvider';
+import { LessonSummaryCard } from '@widgets/lesson/LessonSummaryCard';
 
 type Tab = 'chat' | 'whiteboard';
 
@@ -93,7 +94,13 @@ export default function LessonPage() {
       if (role === 'client') await cancelClient({ lessonId, reason: cancelReason }).unwrap();
       else                   await cancelTutor({ lessonId, reason: cancelReason }).unwrap();
       navigate('/dashboard');
-    } catch {}
+    } catch (err) {
+      // Отмена не прошла — остаёмся на странице. Пользователю ошибка пока
+      // не показывается (в этом компоненте вообще нет механизма её вывода:
+      // остальные обработчики так же гасят её через .catch(() => {})).
+      // Логируем, чтобы отказ хотя бы был диагностируемым, а не невидимым.
+      console.error('Не удалось отменить урок:', err);
+    }
   };
 
   const handlePropose = async () => {
@@ -266,6 +273,11 @@ export default function LessonPage() {
             <p className="text-2xl">{STATUS_LABEL[status]}</p>
             {lesson.cancellationReason && (
               <p className="text-sm text-gray-400">Grund: {lesson.cancellationReason}</p>
+            )}
+            {status === 'completed' && (
+              <div className="max-w-md mx-auto">
+                <LessonSummaryCard lessonId={lessonId} />
+              </div>
             )}
             {status === 'completed' && lesson.type === 'trial' && role === 'client' && (
         <div className="bg-blue-600/20 border border-blue-600/40 rounded-2xl p-5 text-left space-y-3">

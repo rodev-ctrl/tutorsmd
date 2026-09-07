@@ -12,7 +12,14 @@
     "resolveJsonModule": true,
     "lib": ["ES2022"],
     "types": ["node"],
-    "typeRoots": ["./types", "./node_modules/@types"]
+    // Последний путь обязателен из-за npm workspaces: корневой package.json
+    // объявляет workspaces ["frontend", "backend"], поэтому npm поднимает
+    // зависимости в D:/tutors2/node_modules, и backend/node_modules остаётся
+    // почти пустым. Без "../node_modules/@types" компилятор не находит
+    // @types/node и падает с TS2688 «Cannot find type definition file for 'node'».
+    // Явное перечисление typeRoots отключает обычный поиск вверх по дереву,
+    // поэтому корень нужно указать руками.
+    "typeRoots": ["./types", "./node_modules/@types", "../node_modules/@types"]
   },
   "include": [
     "./**/*.ts",
