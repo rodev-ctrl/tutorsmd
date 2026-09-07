@@ -12,12 +12,14 @@ import {
   RescheduleByClientSchema,
   StartLessonSchema,
   UploadMaterialSchema,
+  AskMaterialsSchema,
   LessonIdParamsSchema,
   ScheduleIdParamsSchema,
   MaterialIdParamsSchema,
   LessonIdParams,
   ScheduleIdParams,
   MaterialIdParams,
+  AskMaterialsBody,
 } from '../controllers/lesson/lesson.schema';
 import {
   lessonActionLimiter,
@@ -221,6 +223,23 @@ export const createLessonRouter = (controller: ILessonController): Router => {
     lessonMaterialLimiter,
     validate(MaterialIdParamsSchema, 'params'),
     wrap<MaterialIdParams>((req, res) => controller.deleteMaterial(req, res)),
+  );
+
+  router.post(
+    '/:lessonId/materials/ask',
+    requireAuth,
+    lessonMaterialLimiter,
+    validate(LessonIdParamsSchema, 'params'),
+    validate(AskMaterialsSchema),
+    wrap<LessonIdParams, {}, AskMaterialsBody>((req, res) => controller.askAboutMaterials(req, res)),
+  );
+
+  // --- Summary ----------------------------------------------------
+  router.get(
+    '/:lessonId/summary',
+    requireAuth,
+    validate(LessonIdParamsSchema, 'params'),
+    wrap<LessonIdParams>((req, res) => controller.getSummary(req, res)),
   );
 
   return router;

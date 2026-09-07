@@ -43,6 +43,10 @@ export const UploadMaterialSchema = z.object({
   fileSize:     z.number().int().positive(),
 });
 
+export const AskMaterialsSchema = z.object({
+  question: z.string().min(1).max(1000),
+});
+
 // ─── Params ───────────────────────────────────────────────────
 
 export const LessonIdParamsSchema = z.object({
@@ -66,6 +70,7 @@ export type ProposeRescheduleBody     = z.infer<typeof ProposeRescheduleSchema>;
 export type RescheduleByClientBody    = z.infer<typeof RescheduleByClientSchema>;
 export type StartLessonBody           = z.infer<typeof StartLessonSchema>;
 export type UploadMaterialBody        = z.infer<typeof UploadMaterialSchema>;
+export type AskMaterialsBody          = z.infer<typeof AskMaterialsSchema>;
 export type LessonIdParams            = z.infer<typeof LessonIdParamsSchema>;
 export type ScheduleIdParams          = z.infer<typeof ScheduleIdParamsSchema>;
 export type MaterialIdParams          = z.infer<typeof MaterialIdParamsSchema>;

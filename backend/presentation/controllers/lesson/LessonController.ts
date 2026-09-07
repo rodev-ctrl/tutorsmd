@@ -16,6 +16,8 @@ import { MarkNoShowTutorUseCase }           from '../../../application/usecases/
 import { UploadLessonMaterialUseCase }      from '../../../application/usecases/lesson/material/UploadLessonMaterialUseCase';
 import { GetLessonMaterialUseCase }        from '../../../application/usecases/lesson/material/GetLessonMaterialUseCase';
 import { DeleteLessonMaterialUseCase }      from '../../../application/usecases/lesson/material/DeleteLessonMaterialUseCase';
+import { AskAboutMaterialsUseCase }         from '../../../application/usecases/lesson/material/AskAboutMaterialsUseCase';
+import { GetLessonSummaryUseCase }          from '../../../application/usecases/lesson/GetLessonSummaryUseCase';
 import { CreateRegularScheduleUseCase }     from '../../../application/usecases/lesson/regular/CreateRegularScheduleUseCase';
 import { CancelRegularScheduleUseCase }     from '../../../application/usecases/lesson/regular/CancelRegularScheduleUseCase';
 import { CancelSingleLessonUseCase }        from '../../../application/usecases/lesson/regular/CancelSingleLessonUseCase';
@@ -29,6 +31,7 @@ import {
   RescheduleByClientBody,
   StartLessonBody,
   UploadMaterialBody,
+  AskMaterialsBody,
   LessonIdParams,
   ScheduleIdParams,
   MaterialIdParams,
@@ -53,6 +56,8 @@ export class LessonController implements ILessonController {
     private readonly uploadMaterialUseCase:        UploadLessonMaterialUseCase,
     private readonly getMaterialUseCase:           GetLessonMaterialUseCase,
     private readonly deleteMaterialUseCase:        DeleteLessonMaterialUseCase,
+    private readonly askAboutMaterialsUseCase:     AskAboutMaterialsUseCase,
+    private readonly getLessonSummaryUseCase:      GetLessonSummaryUseCase,
     private readonly createRegularScheduleUseCase: CreateRegularScheduleUseCase,
     private readonly cancelRegularScheduleUseCase: CancelRegularScheduleUseCase,
     private readonly cancelSingleLessonUseCase:    CancelSingleLessonUseCase,
@@ -321,6 +326,42 @@ export class LessonController implements ILessonController {
       deleterRole,
     });
     res.status(200).json({ message: 'Material deleted.' });
+  }
+
+  async askAboutMaterials(
+    req: Request<LessonIdParams, {}, AskMaterialsBody>,
+    res: Response,
+  ): Promise<void> {
+    const requesterId   = req.user!.profileId;
+    const requesterRole = req.user!.activeRole as 'client' | 'tutor';
+    const { lessonId }  = req.params;
+    const { question }  = req.body;
+
+    const result = await this.askAboutMaterialsUseCase.execute({
+      lessonId,
+      requesterId,
+      requesterRole,
+      question,
+    });
+    res.status(200).json(result);
+  }
+
+  // ─── Summary ────────────────────────────────────────────────────
+
+  async getSummary(
+    req: Request<LessonIdParams>,
+    res: Response,
+  ): Promise<void> {
+    const requesterId   = req.user!.profileId;
+    const requesterRole = req.user!.activeRole as 'client' | 'tutor';
+    const { lessonId }  = req.params;
+
+    const result = await this.getLessonSummaryUseCase.execute({
+      lessonId,
+      requesterId,
+      requesterRole,
+    });
+    res.status(200).json(result);
   }
 
   // ─── Regular schedule ─────────────────────────────────────────
