@@ -8,6 +8,7 @@ import {
   RescheduleByClientBody,
   StartLessonBody,
   UploadMaterialBody,
+  AskMaterialsBody,
   LessonIdParams,
   ScheduleIdParams,
   MaterialIdParams,
@@ -46,6 +47,10 @@ export interface ILessonController {
   uploadMaterial(req: Request<LessonIdParams, {}, UploadMaterialBody>, res: Response): Promise<void>;
   getMaterials(req: Request<LessonIdParams>, res: Response): Promise<void>;
   deleteMaterial(req: Request<MaterialIdParams>, res: Response): Promise<void>;
+  askAboutMaterials(req: Request<LessonIdParams, {}, AskMaterialsBody>, res: Response): Promise<void>;
+
+  // Summary
+  getSummary(req: Request<LessonIdParams>, res: Response): Promise<void>;
 
   // Regular schedule
   createRegularSchedule(req: Request<{}, {}, CreateRegularScheduleBody>, res: Response): Promise<void>;
