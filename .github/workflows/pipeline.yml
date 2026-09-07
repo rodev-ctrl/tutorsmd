@@ -92,6 +92,10 @@ jobs:
           PASSWORD_PEPPER: test-pepper-for-ci
           NODE_ENV: test
 
+      - name: Build
+        working-directory: backend
+        run: npm run build
+
   # ── 2. Frontend: typecheck + build ────────────────────────────
   frontend:
     name: Frontend — typecheck & build
@@ -113,6 +117,14 @@ jobs:
         working-directory: frontend
         run: npx tsc --noEmit
 
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Unit tests
+        working-directory: frontend
+        run: npm run test:ci
+
       - name: Build
         working-directory: frontend
         run: npm run build
@@ -120,7 +132,18 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
 
-  # ── 3. Deploy — только main ───────────────────────────────────
+  # ── 3. Validate docker-compose.yml ────────────────────────────
+  validate-compose:
+    name: Validate docker-compose.yml
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate compose file syntax
+        run: docker compose config --quiet
+
+  # ── 4. Deploy — только main ───────────────────────────────────
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
