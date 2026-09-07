@@ -95,7 +95,9 @@ services:
       dockerfile: Dockerfile
     container_name: tutors-ai
     restart: on-failure
-    env_file: ./ai/.env
+    # Путь согласован с build.context выше: сервис и его .env лежат рядом,
+    # в ai/ai-service/. Именно так файл размещён на сервере.
+    env_file: ./ai/ai-service/.env
     expose:
       - "8000"
     healthcheck:

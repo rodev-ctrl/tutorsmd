@@ -147,7 +147,9 @@ jobs:
       # Создаём пустые заглушки: проверяем СТРУКТУРУ compose-файла, а не
       # секреты. Пустой env_file для compose валиден.
       - name: Create placeholder env files
-        run: touch ai/.env backend/.env
+        run: |
+          mkdir -p ai/ai-service
+          touch ai/ai-service/.env backend/.env
 
       - name: Validate compose file syntax
         run: docker compose config --quiet
