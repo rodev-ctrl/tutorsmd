@@ -140,8 +140,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # `docker compose config` не просто парсит YAML — он раскрывает
+      # env_file и подставляет ${VAR}. Реальные .env в репозиторий не
+      # коммитятся (.gitignore), поэтому в раннере их нет, и шаг падал с
+      #   env file /home/runner/.../ai/.env not found
+      # Создаём пустые заглушки: проверяем СТРУКТУРУ compose-файла, а не
+      # секреты. Пустой env_file для compose валиден.
+      - name: Create placeholder env files
+        run: touch ai/.env backend/.env
+
       - name: Validate compose file syntax
         run: docker compose config --quiet
+        env:
+          # Без них compose печатает "variable is not set, defaulting to a
+          # blank string" и собирает строку подключения вида
+          # postgresql://:@postgres:5432/ — синтаксис проходит, но проверка
+          # получается бессмысленной. Значения фиктивные и никуда не уходят.
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
 
   # ── 4. Deploy — только main ───────────────────────────────────
   deploy:
