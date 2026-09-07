@@ -101,11 +101,19 @@ services:
     expose:
       - "8000"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+      # Проверка через сам Python, а не через wget: в образе python:3.12-slim
+      # (Debian slim) нет ни wget, ни curl — прежняя команда не могла
+      # отработать никогда, и контейнер навсегда оставался бы unhealthy.
+      # Ставить ради healthcheck лишний пакет незачем — интерпретатор здесь
+      # гарантированно есть.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s  # AI сервисы стартуют долго (загрузка моделей)
+      # Сервис не загружает локальных моделей — он только ходит в API
+      # Anthropic и Voyage. Стартует за секунды, 60 s здесь были заложены
+      # под сценарий, которого нет.
+      start_period: 20s
     depends_on:
       postgres:
         condition: service_healthy
