@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useLoginMutation } from '@shared/api/authApi';
 import { loginSchema, type LoginFormData } from '@features/auth/schemas';
 import AuthLayout from '@widgets/auth/ui/AuthLayout';
+import { GoogleSignInButton } from '@widgets/auth/ui/GoogleSignInButton';
 import { authInputClass, authButtonClass } from '@shared/ui/auth/styles';
 import { useTranslation } from 'react-i18next';
 
@@ -88,6 +89,20 @@ export default function LoginPage() {
             </label>
           ))}
         </div>
+      )}
+
+      {!isAdminLogin && (
+        <>
+          <GoogleSignInButton
+            role={activeRole === 'tutor' ? 'tutor' : 'client'}
+            onError={setServerError}
+          />
+          <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
+            <div className="h-px flex-1 bg-slate-200" />
+            {t('or')}
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+        </>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
