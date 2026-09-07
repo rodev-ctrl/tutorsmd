@@ -12,6 +12,10 @@ export interface IAuthController {
   login(req: Request, res: Response): Promise<void>;
   logout(req: Request, res: Response): Promise<void>;
 
+  // Google OAuth
+  googleAuthClient(req: Request, res: Response): Promise<void>;
+  googleAuthTutor(req: Request, res: Response): Promise<void>;
+
   // Tokens
   refresh(req: Request, res: Response): Promise<void>;
   switchRole(req: Request, res: Response): Promise<void>;

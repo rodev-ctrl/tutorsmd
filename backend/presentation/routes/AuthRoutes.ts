@@ -14,6 +14,7 @@ import {
   ResetPasswordSchema,
   RequestEmailChangeSchema,
   RevokeSessionSchema,
+  GoogleAuthSchema,
 } from '../controllers/auth/auth.schema';
 import { wrap } from './wrapper';
 import { emailChangeLimiter, forgotPasswordLimiter, loginLimiter, logoutLimiter, passwordChangeLimiter, refreshLimiter, registerLimiter, resendVerificationLimiter, revokeSessionLimiter } from '../middlewares/rateLimiter';
@@ -58,6 +59,21 @@ export const createAuthRouter = (controller: IAuthController): Router => {
     loginLimiter,
     validate(LoginSchema),
     wrap((req, res) => controller.login(req, res)),
+  );
+
+  // ─── Google OAuth ─────────────────────────────────────────
+  router.post(
+    '/google/client',
+    loginLimiter,
+    validate(GoogleAuthSchema),
+    wrap((req, res) => controller.googleAuthClient(req, res)),
+  );
+
+  router.post(
+    '/google/tutor',
+    loginLimiter,
+    validate(GoogleAuthSchema),
+    wrap((req, res) => controller.googleAuthTutor(req, res)),
   );
 
   router.post(
