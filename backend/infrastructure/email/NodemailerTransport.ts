@@ -15,7 +15,7 @@ export class NodemailerTransport {
     this.instance = nodemailer.createTransport({
       host: SMTP_HOST,
       port: Number(SMTP_PORT),
-      secure: NODE_ENV === 'production' || SMTP_PORT === '465',
+      secure: SMTP_PORT === '465',
       auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
       tls: { rejectUnauthorized: false },
     });

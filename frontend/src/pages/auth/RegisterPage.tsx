@@ -11,11 +11,8 @@ import { authInputClass, authButtonClass } from '@shared/ui/auth/styles';
 import { useTranslation } from 'react-i18next';
 import zxcvbn from 'zxcvbn';
 
-interface Props {
-  role?: 'client' | 'tutor';
-}
 
-export default function RegisterPage({ role = 'client' }: Props) {
+export default function RegisterPage() {
   const { t } = useTranslation('auth');
 
   const [registerClient, { isLoading: loadingClient }] = useRegisterClientMutation();
@@ -25,7 +22,9 @@ export default function RegisterPage({ role = 'client' }: Props) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess]         = useState(false);
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>({
+  const [selectedRole, setSelectedRole] = useState<'client' | 'tutor'>('client');
+
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema) as any,
     defaultValues: {
       languageCode: 'de',
@@ -41,7 +40,7 @@ export default function RegisterPage({ role = 'client' }: Props) {
     setServerError(null);
     const { confirmPassword, ...dto } = data;
     try {
-      if (role === 'tutor') {
+      if (selectedRole === 'tutor') {
         await registerTutor(dto).unwrap();
       } else {
         await registerClient(dto).unwrap();
@@ -52,7 +51,7 @@ export default function RegisterPage({ role = 'client' }: Props) {
     }
   };
 
-  const isTutor = role === 'tutor';
+  const isTutor = selectedRole === 'tutor';
 
   if (success) {
     return (
@@ -93,27 +92,21 @@ export default function RegisterPage({ role = 'client' }: Props) {
         title={isTutor ? t('registerPage.titleTutor') : t('registerPage.titleClient')}
         subtitle={isTutor ? t('registerPage.subtitleTutor') : t('registerPage.subtitleClient')}
       >
-        {/* Role switcher */}
         <div className="mb-6 flex rounded-2xl bg-slate-100 p-1">
-          <Link
-            to="/register"
-            className={`flex-1 rounded-xl py-2.5 text-center text-sm font-medium transition-all
-              ${!isTutor
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            {t('student')}
-          </Link>
-          <Link
-            to="/register/tutor"
-            className={`flex-1 rounded-xl py-2.5 text-center text-sm font-medium transition-all
-              ${isTutor
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            {t('tutor')}
-          </Link>
-        </div>
+  {(['client', 'tutor'] as const).map((r) => (
+    <button
+      key={r}
+      type="button"
+      onClick={() => setSelectedRole(r)}
+      className={`flex-1 rounded-xl py-2.5 text-center text-sm font-medium transition-all
+        ${selectedRole === r
+          ? 'bg-white text-blue-600 shadow-sm'
+          : 'text-slate-500 hover:text-slate-700'}`}
+    >
+      {r === 'client' ? t('student') : t('tutor')}
+    </button>
+  ))}
+</div>
 
         <GoogleSignInButton role={isTutor ? 'tutor' : 'client'} onError={setServerError} />
         <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
