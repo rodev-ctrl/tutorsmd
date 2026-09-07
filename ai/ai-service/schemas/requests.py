@@ -3,9 +3,11 @@ from typing import Optional, List
 
 # ── Vision ────────────────────────────────────────────────────────
 class ExplainImageRequest(BaseModel):
-    image_url: str
-    language:  str = "de"
-    context:   Optional[str] = None
+    requester_id: str   # muss authenticated_user_id aus dem JWT entsprechen
+    image_url:    str
+    language:     str = "de"
+    context:      Optional[str] = None
+    question:     Optional[str] = None  # konkrete Rückfrage zum Bild, statt "erklär alles"
 
     @field_validator("language")
     @classmethod
@@ -14,6 +16,25 @@ class ExplainImageRequest(BaseModel):
         if v not in allowed:
             raise ValueError(f"Language must be one of {allowed}")
         return v
+
+
+# ── Dokumente (PDF / Text) ────────────────────────────────────────
+# Getrennt von ExplainImageRequest, weil der Antwortweg ein anderer ist:
+# Dokumente laufen mit citations (Seitenzahlen im Ergebnis) und deshalb OHNE
+# JSON-Schema — beides zusammen gibt einen 400. Bilder umgekehrt: Schema, keine
+# Citations (Bildzitate unterstützt die API nicht).
+class ExplainDocumentRequest(BaseModel):
+    requester_id: str
+    document_url: str                     # vom Backend signierte URL zur Datei
+    question:     Optional[str] = None    # None = "fasse das Dokument zusammen"
+    filename:     str = "document.pdf"    # wird als Zitat-Titel angezeigt
+
+    @field_validator("document_url")
+    @classmethod
+    def url_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("document_url cannot be empty")
+        return v.strip()
 
 # ── Summary ───────────────────────────────────────────────────────
 class SummaryRequest(BaseModel):
@@ -28,16 +49,21 @@ class SummaryRequest(BaseModel):
         return v.strip()
 
 # ── RAG ───────────────────────────────────────────────────────────
+# requester_id: client_id oder tutor_id des Nutzers, für den backend diese
+# Anfrage stellt — backend hat die Ownership bereits über Prisma geprüft,
+# ai-service erzwingt sie hier zusätzlich per JOIN gegen lessons (defense in depth).
 class IngestDocumentRequest(BaseModel):
-    lesson_id:   str
-    material_id: str
-    text:        str        # уже извлечённый текст из PDF/конспекта
-    metadata:    Optional[dict] = None
+    requester_id: str        # muss tutor_id des Lessons sein — nur der Tutor lädt Material hoch
+    lesson_id:    str
+    material_id:  str
+    text:         str        # уже извлечённый текст из PDF/конспекта
+    metadata:     Optional[dict] = None
 
 class AskRequest(BaseModel):
-    question:  str
-    lesson_id: Optional[str] = None  # None = ищем по всем урокам юзера
-    top_k:     int = 3               # сколько чанков брать
+    requester_id: str                 # client_id oder tutor_id — Pflicht, kein Scoping ohne Identität
+    question:     str
+    lesson_id:    Optional[str] = None  # None = ищем по всем урокам ЭТОГО requester_id (не всех юзеров)
+    top_k:        int = 3               # сколько чанков брать
 
     @field_validator("question")
     @classmethod
@@ -59,10 +85,11 @@ class ChatMessage(BaseModel):
     content: str
 
 class ChatRequest(BaseModel):
-    message:  str
-    history:  List[ChatMessage] = []
-    lesson_id: Optional[str] = None
-    use_rag:   bool = True  # использовать ли RAG для контекста
+    requester_id: str                 # client_id oder tutor_id — Pflicht für RAG-Scoping
+    message:      str
+    history:      List[ChatMessage] = []
+    lesson_id:    Optional[str] = None
+    use_rag:      bool = True  # использовать ли RAG для контекста
 
     @field_validator("message")
     @classmethod
@@ -73,8 +100,13 @@ class ChatRequest(BaseModel):
 
 # ── Calendar ──────────────────────────────────────────────────────
 class BookLessonRequest(BaseModel):
-    request_text:      str   # z.B. "Buche eine Stunde für Donnerstag 16 Uhr"
-    tutor_calendar_id: str   # aus der DB, nicht vom Client frei wählbar
+    requester_id:       str   # muss authenticated_user_id aus dem JWT entsprechen
+    request_text:       str   # z.B. "Buche eine Stunde für Donnerstag 16 Uhr"
+    tutor_calendar_id:  str   # aus der DB, nicht vom Client frei wählbar
+    # Optionaler Lektionsbezug: erlaubt dem Assistenten, über get_lesson_context
+    # den bereits gebuchten Termin, die Dauer und die Zeitzonen beider Seiten
+    # zu lesen, statt den Nutzer nach Daten zu fragen, die das System kennt.
+    lesson_id:          Optional[str] = None
 
     @field_validator("request_text")
     @classmethod

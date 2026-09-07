@@ -1,41 +1,66 @@
 """
-Bucht Unterrichtstermine über den Kalender des Tutors via MCP.
+calendar_assistant.py — запись уроков в Google-календарь тьютора через MCP.
 
-Wichtig: Anthropics `mcp_servers`-Parameter (client.beta.messages.create) spricht
-nur mit MCP-Servern, die über eine öffentliche URL erreichbar sind (wie z.B.
-https://mcp.linear.app/mcp). Es gibt keinen offiziellen, öffentlich gehosteten
-Google-Calendar-MCP-Server — verfügbare Implementierungen laufen lokal per stdio
-(z.B. `npx -y @cocal/google-calendar-mcp`), genau wie unsere `github`/`postgres`
-Server in .mcp.json.
+Про транспорт
+─────────────
+Параметр `mcp_servers` в Anthropic API умеет разговаривать только с MCP-серверами
+по публичному URL. Официального хостируемого MCP-сервера Google Calendar нет —
+доступные реализации запускаются локально по stdio (`npx -y
+@cocal/google-calendar-mcp`), как и наши github/postgres в .mcp.json. Поэтому
+мост построен вручную: сервер поднимается подпроцессом, его схемы инструментов
+забираются через list_tools(), модели отдаётся только разрешённый список
+(без удаления), а цикл tool_use/tool_result крутится нашим кодом.
 
-Deshalb bauen wir die Brücke hier selbst: wir starten den MCP-Server als
-Subprozess, holen seine Tool-Schemas per `list_tools()`, reichen nur eine
-Allowlist an Claude weiter (kein delete-Zugriff), und übernehmen den
-tool_use/tool_result-Loop manuell — das Äquivalent zu `mcp_toolset` +
-`default_config: {"enabled": False}` aus der Doku, nur selbst geschrieben,
-weil die Anthropic API stdio-Server nicht nativ unterstützt.
+НЕ ПРОВЕРЕНО НА ЖИВОМ СЕРВЕРЕ: предполагается, что MCP-сервер календаря
+настроен через GOOGLE_CALENDAR_MCP_COMMAND/-ARGS и что имена инструментов
+совпадают с ALLOWED_CALENDAR_TOOLS. Перед боевым запуском стоит один раз
+выполнить с ALLOWED_CALENDAR_TOOLS=None и сверить реальные имена из list_tools().
 
-NICHT VERIFIZIERT: Setzt voraus, dass ein Google-Calendar-MCP-Server via
-GOOGLE_CALENDAR_MCP_COMMAND/-ARGS konfiguriert ist und die Tool-Namen in
-ALLOWED_CALENDAR_TOOLS zu diesem Server passen. Vor dem produktiven Einsatz:
-einmal mit ALLOWED_CALENDAR_TOOLS=None laufen lassen und die echten Tool-Namen
-aus list_tools() gegen die Allowlist unten abgleichen.
+Что изменилось
+──────────────
+1. <critical>
+   Убран `temperature=0.0`. На claude-sonnet-5 любое ненулевое отклонение
+   сэмплирующих параметров от значения по умолчанию возвращает HTTP 400, а в
+   anthropic 1.x аргумент temperature вообще удалён из messages.create и даёт
+   TypeError ещё до сети. То есть эта функция не могла отработать ни разу.
+   Детерминированность, ради которой ставился ноль, теперь достигается иначе:
+   строгой схемой ответа и обязательным вычислением дат инструментами.
+   </critical>
+
+2. Добавлены инструменты времени. Модель больше не «прикидывает», какое
+   сегодня число: get_current_datetime / find_next_weekday / add_duration /
+   convert_timezone дают точный ответ, а системный промпт запрещает считать
+   даты в уме.
+
+3. Ответ приведён к схеме CALENDAR_RESULT_SCHEMA: статус, событие,
+   альтернативы при конфликте, текст для пользователя и список реально
+   вызванных инструментов (для аудита — что ассистент на самом деле делал).
+
+4. Общий цикл инструментов из services/tool_loop.py вместо собственного:
+   параллельное выполнение, все tool_result одним сообщением, защита от
+   повторов и подсказка «попробуй другой инструмент» при пустом результате.
 """
 
+import json
 import os
 import shlex
+from typing import Any
 
-import anthropic
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-client = anthropic.AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+from services import prompts
+from services.anthropic_client import EFFORT_DEEP, MODEL_COMPLEX, client
+from services.schemas_out import CALENDAR_RESULT_SCHEMA
+from services.tool_loop import run_tool_loop
+from services.tools.registry import ToolContext, build_executor, build_tools, result_to_content
 
-# Nur lesen + anlegen - bewusst kein "delete-event", damit der Assistent nie
-# selbstständig einen Termin löschen kann.
+# Только чтение и создание — сознательно без "delete-event", чтобы ассистент
+# физически не мог удалить чужой урок. Инструмента нет в списке — значит его
+# нельзя вызвать никаким промптом.
 ALLOWED_CALENDAR_TOOLS = {"list-events", "create-event", "list-calendars"}
 
-MAX_TOOL_TURNS = 5  # Sicherheitslimit gegen Endlosschleifen im Agent-Loop
+MAX_TOOL_TURNS = 6
 
 
 def _mcp_tool_to_anthropic_schema(tool) -> dict:
@@ -46,80 +71,133 @@ def _mcp_tool_to_anthropic_schema(tool) -> dict:
     }
 
 
-async def book_lesson(request_text: str, tutor_calendar_id: str) -> dict:
+async def book_lesson(
+    request_text: str,
+    tutor_calendar_id: str,
+    requester_id: str = "",
+    lesson_id: str | None = None,
+) -> dict:
     """
-    request_text: natürlichsprachliche Anfrage, z.B. "Buche eine Stunde für Donnerstag 16 Uhr"
-    tutor_calendar_id: welcher Google-Kalender betroffen ist (aus der DB, nicht vom User frei wählbar)
+    request_text:      естественная формулировка, «Buche eine Stunde für Donnerstag 16 Uhr»
+    tutor_calendar_id: какой календарь затрагивается (из БД, не выбирается клиентом)
+    requester_id:      профиль пользователя из проверенного JWT — по нему
+                       resolve_user_timezone находит его часовой пояс
+    lesson_id:         урок, если запрос идёт из его контекста
     """
     command = os.getenv("GOOGLE_CALENDAR_MCP_COMMAND", "npx")
     args = shlex.split(os.getenv("GOOGLE_CALENDAR_MCP_ARGS", "-y @cocal/google-calendar-mcp"))
-
     server_params = StdioServerParameters(command=command, args=args, env=os.environ.copy())
+
+    ctx = ToolContext(requester_id=requester_id, lesson_id=lesson_id, tutor_calendar_id=tutor_calendar_id)
+    local_executor = build_executor(ctx)
 
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
 
             available = await session.list_tools()
-            allowed_tools = [t for t in available.tools if t.name in ALLOWED_CALENDAR_TOOLS]
-            if not allowed_tools:
+            allowed = [t for t in available.tools if t.name in ALLOWED_CALENDAR_TOOLS]
+            if not allowed:
                 raise RuntimeError(
-                    f"Keine der erlaubten Tools {ALLOWED_CALENDAR_TOOLS} wurde vom "
-                    f"MCP-Server angeboten. Verfügbar: {[t.name for t in available.tools]}"
+                    f"Keine der erlaubten Tools {ALLOWED_CALENDAR_TOOLS} wurde vom MCP-Server "
+                    f"angeboten. Verfügbar: {[t.name for t in available.tools]}"
                 )
 
-            anthropic_tools = [_mcp_tool_to_anthropic_schema(t) for t in allowed_tools]
+            # Сортировка по имени — не косметика. Определения инструментов
+            # рендерятся в самое начало префикса запроса, а кэш префиксный:
+            # если MCP-сервер вернёт тот же набор в другом порядке, кэш
+            # обнулится целиком. list_tools() порядок не гарантирует.
+            mcp_names = {t.name for t in allowed}
+            mcp_tools = [_mcp_tool_to_anthropic_schema(t) for t in sorted(allowed, key=lambda t: t.name)]
 
-            messages = [
-                {
-                    "role": "user",
-                    "content": (
-                        f"Kalender-ID des Tutors: {tutor_calendar_id}\n\n"
-                        f"Anfrage: {request_text}"
-                    ),
-                }
-            ]
+            # Инструменты времени идут ПЕРВЫМИ, инструменты календаря — после.
+            # cache_control ставится на последний элемент всего массива.
+            tools = build_tools("time", "lesson", cache=False) + mcp_tools
+            tools = tools[:-1] + [{**tools[-1], "cache_control": {"type": "ephemeral"}}]
 
-            for _ in range(MAX_TOOL_TURNS):
-                response = await client.messages.create(
-                    model="claude-sonnet-5",
-                    max_tokens=1024,
-                    system="""Du hilfst, Nachhilfestunden im Google Kalender des Tutors zu verwalten.
-Nutze list-events, um Konflikte zu prüfen, bevor du create-event aufrufst.
-Erfinde niemals eine Uhrzeit oder ein Datum, das nicht explizit in der Anfrage steht.""",
-                    tools=anthropic_tools,
-                    messages=messages,
-                )
+            async def executor(name: str, tool_input: dict) -> dict:
+                if name not in mcp_names:
+                    return await local_executor(name, tool_input)
 
-                if response.stop_reason != "tool_use":
-                    final_text = "".join(
-                        b.text for b in response.content if b.type == "text"
-                    )
-                    return {"answer": final_text, "status": "done"}
+                # Календарь — единственное место, где модель пишет во внешнюю
+                # систему. Идентификатор календаря подставляется здесь, из
+                # серверного контекста, и перетирает всё, что могла придумать
+                # модель: иначе текст пользователя «запиши в календарь X»
+                # уводил бы запись в чужой календарь.
+                payload = dict(tool_input or {})
+                if tutor_calendar_id:
+                    for key in ("calendarId", "calendar_id"):
+                        if key in payload or name in ("list-events", "create-event"):
+                            payload[key if key in payload else "calendarId"] = tutor_calendar_id
+                            break
 
-                messages.append({"role": "assistant", "content": response.content})
+                try:
+                    result = await session.call_tool(name, payload)
+                except Exception as e:  # noqa: BLE001
+                    return {
+                        "status": "error",
+                        "error": f"MCP call {name} failed: {type(e).__name__}: {e}",
+                        "hint": "Try list-calendars to check the calendar is reachable, or report failure to the user.",
+                    }
 
-                tool_results = []
-                for block in response.content:
-                    if block.type != "tool_use":
-                        continue
-                    result = await session.call_tool(block.name, block.input)
-                    tool_results.append(
-                        {
-                            "type": "tool_result",
-                            "tool_use_id": block.id,
-                            "content": [
-                                {"type": "text", "text": c.text}
-                                for c in result.content
-                                if c.type == "text"
-                            ],
-                            "is_error": result.isError,
-                        }
-                    )
+                text = "\n".join(c.text for c in result.content if getattr(c, "type", None) == "text")
 
-                messages.append({"role": "user", "content": tool_results})
+                if result.isError:
+                    return {
+                        "status": "error",
+                        "error": text or f"{name} reported an error",
+                        "hint": "Check the arguments (ISO-8601 with offset?) and retry once, or try list-events first.",
+                    }
+                if not text.strip():
+                    return {
+                        "status": "empty",
+                        "hint": (
+                            f"{name} returned nothing. If this was list-events, the time window was "
+                            "probably too narrow — retry with a wider range before concluding the slot is free."
+                        ),
+                    }
+                return {"status": "ok", "tool": name, "result": text}
 
-            return {
-                "answer": "Die Anfrage konnte nicht in der erwarteten Anzahl Schritte abgeschlossen werden.",
-                "status": "max_turns_exceeded",
-            }
+            user_content = (
+                f"<calendar_id>{tutor_calendar_id}</calendar_id>\n\n"
+                f"<user_request>\n{request_text}\n</user_request>"
+            )
+
+            loop_result = await run_tool_loop(
+                client,
+                model=MODEL_COMPLEX,
+                system=prompts.system_block(prompts.CALENDAR_SYSTEM),
+                messages=[{"role": "user", "content": user_content}],
+                tools=tools,
+                executor=executor,
+                result_formatter=result_to_content,
+                max_tokens=2048,
+                effort=EFFORT_DEEP,
+                output_schema=CALENDAR_RESULT_SCHEMA,
+                max_turns=MAX_TOOL_TURNS,
+            )
+
+    data: dict[str, Any] = loop_result.structured or {}
+    if not data:
+        # Схема не разобралась — почти всегда это обрыв по max_tokens или
+        # выход из цикла по лимиту витков. Ничего не выдумываем и явно
+        # сообщаем, что запись НЕ создана.
+        return {
+            "status": "failed",
+            "event": None,
+            "alternatives": [],
+            "message_to_user": (
+                "Die Anfrage konnte nicht abgeschlossen werden. Es wurde nichts eingetragen — "
+                "bitte nenne Datum und Uhrzeit noch einmal ausdrücklich."
+            ),
+            "tools_used": loop_result.tools_used,
+            "stop_reason": loop_result.stop_reason,
+            "_usage": loop_result.usage,
+        }
+
+    # tools_used, посчитанный нами, надёжнее того, что перечислила модель:
+    # это фактические вызовы, а не её собственный отчёт о них.
+    data["tools_used"] = loop_result.tools_used
+    data["stop_reason"] = loop_result.stop_reason
+    data["_usage"] = loop_result.usage
+    return data
